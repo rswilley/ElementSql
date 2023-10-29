@@ -1,4 +1,5 @@
-using ElementSql.Example.Data;
+using ElementSql.Example.Data.PersonRepository;
+using ElementSql.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElementSql.Example.Controllers
@@ -7,11 +8,11 @@ namespace ElementSql.Example.Controllers
     [Route("[controller]")]
     public class PersonController : ControllerBase
     {
-        private readonly IAppStorageManager _storageManager;
+        private readonly IStorageManager _storageManager;
         private readonly ILogger<PersonController> _logger;
 
         public PersonController(
-            IAppStorageManager storageManager,
+            IStorageManager storageManager,
             ILogger<PersonController> logger)
         {
             _storageManager = storageManager;
@@ -21,11 +22,10 @@ namespace ElementSql.Example.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            using (var session = await _storageManager.StartSession())
-            {
-                var person = await _storageManager.DbContext.PersonRepository.GetByEmailAddress("john@doe.com", session);
-                return Ok(person);
-            }
+            using var session = await _storageManager.StartSession();
+            var person = await _storageManager.GetRepository<IPersonRepository>().GetByEmailAddress("john@doe.com", session);
+
+            return Ok(person);
         }
     }
 }

@@ -25,6 +25,17 @@ namespace ElementSql
             return new UnitOfWorkContext(unitOfWork);
         }
 
+        public TRepository GetRepository<TRepository>()
+        {
+            var repository = _serviceProvider.GetService<TRepository>();
+            if (repository == null)
+            {
+                throw new Exception($"{nameof(TRepository)} is not registered");
+            }
+
+            return repository;
+        }
+
         private readonly IServiceProvider _serviceProvider;
     }
 }
