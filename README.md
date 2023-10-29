@@ -2,7 +2,7 @@ ElementSql is a lightweight wrapper for Dapper and Dapper.Contrib that implement
 
 ElementSql supports all databases that Dapper supports.
 
-Setting up ElementSql
+Setting up ElementSql (MySql Example):
 
 ```csharp
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
@@ -13,7 +13,7 @@ builder.Services.AddElementSql(config =>
 });
 ```
 
-Starting a transaction and writing data to the database 
+Starting a transaction and writing data to the database:
 
 ```csharp
 //UnitOfWorkContext implements IDisposable. The default action is to rollback on error.
@@ -32,7 +32,7 @@ using (var transaction = await _storageManager.StartUnitOfWork()) {
 }
 ```
 
-Opening a database connection and reading data from the database
+Opening a database connection and reading data from the database:
 
 ```csharp
 //SessionContext implements IDisposable and will automatically close the
