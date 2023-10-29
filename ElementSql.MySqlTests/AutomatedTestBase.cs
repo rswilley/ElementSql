@@ -20,7 +20,7 @@ namespace ElementSql.MySqlTests
             serviceCollection.AddSingleton<ITestRepository, TestRepository>();
             serviceCollection.AddTransient<IStorageManager, StorageManager>();
 
-            var connectionString = "server=office-desktop;uid=element;pwd=password;database=element";
+            var connectionString = "server=localhost;uid=element;pwd=password;database=element";
             serviceCollection.AddElementSql(config =>
             {
                 config.ConnectionSession = new MySqlConnectionSession(connectionString);
