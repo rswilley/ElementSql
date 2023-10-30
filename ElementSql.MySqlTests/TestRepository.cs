@@ -13,8 +13,9 @@ namespace ElementSql.MySqlTests
     }
 
     [Table(TableConstants.Elements)]
-    internal class Element : EntityBase
+    internal class Element
     {
+        public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;
         public Guid UniqueId { get; set; } = Guid.NewGuid();

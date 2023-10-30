@@ -5,15 +5,9 @@ using System.Data;
 
 namespace ElementSql
 {
-    public abstract class RepositoryBase<TEntity> where TEntity : EntityBase
+    public abstract class RepositoryBase<TEntity> where TEntity : class
     {
-        public async Task<TEntity> GetById(long id, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.GetAsync<TEntity>(id, parts.Transaction);
-        }
-
-        public async Task<TEntity> GetById(int id, IConnectionContext context)
+        public async Task<TEntity> GetById(object id, IConnectionContext context)
         {
             var parts = context.GetConnectionParts();
             return await parts.Connection.GetAsync<TEntity>(id, parts.Transaction);
@@ -30,7 +24,13 @@ namespace ElementSql
             var parts = context.GetConnectionParts();
             var id = await parts.Connection.InsertAsync(entity, parts.Transaction);
 
-            entity.Id = id;
+            var type = entity.GetType();
+            var idProperty = type.GetProperty("Id");
+            if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
+            {
+                idProperty.SetValue(entity, id, null);
+            }
+
             return entity;
         }
 
@@ -68,12 +68,6 @@ namespace ElementSql
         {
             var parts = context.GetConnectionParts();
             return await parts.Connection.ExecuteReaderAsync(query, param, parts.Transaction);
-        }
-
-        public async Task<T?> Aggregate<T>(string query, object param, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.ExecuteScalarAsync<T>(query, param, parts.Transaction);
         }
 
         public string GetColumns()

@@ -25,15 +25,20 @@ namespace ElementSql
             return new UnitOfWorkContext(unitOfWork);
         }
 
-        public TRepository GetRepository<TRepository>()
+        public TRepository GetRepository<TRepository>() where TRepository : IRepo
         {
             var repository = _serviceProvider.GetService<TRepository>();
-            if (repository == null)
-            {
-                throw new Exception($"{nameof(TRepository)} is not registered");
-            }
+            return repository == null 
+                ? throw new Exception($"Repository {nameof(TRepository)} is not registered") 
+                : repository;
+        }
 
-            return repository;
+        public TQuery GetQuery<TQuery>() where TQuery : IQuery
+        {
+            var query = _serviceProvider.GetService<TQuery>();
+            return query == null
+                ? throw new Exception($"Query {nameof(TQuery)} is not registered")
+                : query;
         }
 
         private readonly IServiceProvider _serviceProvider;

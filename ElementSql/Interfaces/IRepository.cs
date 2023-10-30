@@ -1,9 +1,14 @@
 ﻿namespace ElementSql.Interfaces
 {
-    public interface IRepository<TEntity> where TEntity : EntityBase
+    //marker interface
+    public interface IRepo
     {
-        Task<TEntity> GetById(long id, IConnectionContext context);
-        Task<TEntity> GetById(int id, IConnectionContext context);
+
+    }
+
+    public interface IRepository<TEntity> : IRepo where TEntity : class
+    {
+        Task<TEntity> GetById(object id, IConnectionContext context);
         Task<IEnumerable<TEntity>> GetAll(IConnectionContext context);
         Task<TEntity> Add(TEntity entity, IConnectionContext context);
         Task Update(TEntity entity, IConnectionContext context);

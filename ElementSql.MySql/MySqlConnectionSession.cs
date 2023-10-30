@@ -10,7 +10,7 @@ namespace ElementSql.MySql
         {
             if (string.IsNullOrEmpty(connectionString))
             {
-                throw new ArgumentNullException("No connectionn string found for MySqlConnectionSession.");
+                throw new ArgumentNullException($"No connectionn string found for {nameof(MySqlConnectionSession)}.");
             }
             _connectionString = connectionString;
         }
