@@ -5,6 +5,7 @@ ElementSql supports all databases that Dapper supports.
 Setting up ElementSql (MySql Example):
 
 ```csharp
+//Program.cs
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
 builder.Services.AddElementSql(config =>
 {
@@ -38,6 +39,6 @@ Opening a database connection and reading data from the database:
 //SessionContext implements IDisposable and will automatically close the
 //database connection when Dispose is called
 using (var session = await _storageManager.StartSession()) {
-  var user = await _storageManager.GetRepository<IUserRepository>().GetById(id, sessionContext);
+  var user = await _storageManager.GetRepository<IUserRepository>().GetById(id, session);
 }
 ```
