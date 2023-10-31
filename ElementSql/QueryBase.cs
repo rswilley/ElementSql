@@ -36,4 +36,9 @@ namespace ElementSql
             return await parts.Connection.ExecuteReaderAsync(query, param, parts.Transaction);
         }
     }
+
+    public abstract class CommandBase
+    {
+
+    }
 }

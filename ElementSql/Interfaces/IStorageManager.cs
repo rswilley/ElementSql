@@ -8,7 +8,7 @@ namespace ElementSql.Interfaces
     {
         Task<IConnectionContext> StartSession();
         Task<IConnectionContext> StartUnitOfWork();
-        TRepository GetRepository<TRepository>() where TRepository : IRepo;
-        TQuery GetQuery<TQuery>() where TQuery : IQuery;
+        TRepository GetRepository<TRepository>() where TRepository : ISqlRepository;
+        TQuery GetQuery<TQuery>() where TQuery : ISqlQuery;
     }
 }

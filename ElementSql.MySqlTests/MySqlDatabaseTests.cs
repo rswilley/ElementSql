@@ -16,7 +16,6 @@ namespace ElementSql.MySqlTests
         {
             using var session = await _storageManager.StartSession();
 
-
             var result = await _storageManager.GetQuery<ITestQuery>().GetCurrentTime(session);
 
             Assert.That(result, Is.Not.EqualTo(DateTime.MinValue));

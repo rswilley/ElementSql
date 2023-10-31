@@ -2,7 +2,7 @@
 
 namespace ElementSql.MySqlTests
 {
-    internal interface ITestQuery : IQuery
+    internal interface ITestQuery : ISqlQuery
     {
         Task<DateTime> GetCurrentTime(IConnectionContext context);
     }
