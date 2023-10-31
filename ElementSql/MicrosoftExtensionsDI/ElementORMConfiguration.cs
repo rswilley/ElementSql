@@ -1,9 +1,8 @@
-﻿using ElementSql.Interfaces;
+﻿using ElementSql;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 public class ElementSqlConfiguration
 {
-    public IConnectionSession ConnectionSession { get; set; } = null!;
-    public IUnitOfWork UnitOfWork { get; set; } = null!;
+    public List<SqlDatabase> Databases { get; set; } = new List<SqlDatabase>();
 }

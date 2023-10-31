@@ -24,8 +24,12 @@ namespace ElementSql.MySqlTests
             var connectionString = "server=office-desktop;uid=element;pwd=password;database=element";
             serviceCollection.AddElementSql(config =>
             {
-                config.ConnectionSession = new MySqlConnectionSession(connectionString);
-                config.UnitOfWork = new MySqlUnitOfWork(connectionString);
+                config.Databases.Add(new SqlDatabase
+                {
+                    Name = "Default",
+                    Session = new MySqlConnectionSession(connectionString),
+                    UnitOfWork = new MySqlUnitOfWork(connectionString)
+                });
             });
 
             ServiceProvider = serviceCollection.BuildServiceProvider();

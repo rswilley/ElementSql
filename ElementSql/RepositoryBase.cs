@@ -1,73 +1,72 @@
-﻿using Dapper;
-using Dapper.Contrib.Extensions;
+﻿using Dapper.Contrib.Extensions;
 using ElementSql.Interfaces;
-using System.Data;
+
+// GetAsync - impl
+// GetAllAsync - impl
+// InsertAsync - impl
+// UpdateAsync - impl
+// DeleteAsync - impl
+// DeleteAllAsync
 
 namespace ElementSql
 {
-    public abstract class RepositoryBase<TEntity> where TEntity : class
+    public abstract class RepositoryBase<TEntity> : QueryBase where TEntity : class
     {
-        public async Task<TEntity> GetById(object id, IConnectionContext context)
+        public async Task<TEntity> GetById(object id, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return await parts.Connection.GetAsync<TEntity>(id, parts.Transaction);
+            return await parts.Connection.GetAsync<TEntity>(id, parts.Transaction, commandTimeout);
         }
 
-        public async Task<IEnumerable<TEntity>> GetAll(IConnectionContext context)
+        public async Task<IEnumerable<TEntity>> GetAll(IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return await parts.Connection.GetAllAsync<TEntity>(parts.Transaction);
+            return await parts.Connection.GetAllAsync<TEntity>(parts.Transaction, commandTimeout);
         }
 
-        public async Task<TEntity> Add(TEntity entity, IConnectionContext context)
+        public async Task<TEntity> Add(TEntity entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var id = await parts.Connection.InsertAsync(entity, parts.Transaction);
+            var id = await parts.Connection.InsertAsync(entity, parts.Transaction, commandTimeout);
 
-            var type = entity.GetType();
-            var idProperty = type.GetProperty("Id");
-            if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
-            {
-                idProperty.SetValue(entity, id, null);
-            }
+            TryToSetIdentityProperty();
 
             return entity;
+
+            void TryToSetIdentityProperty()
+            {
+                var type = entity.GetType();
+                var idProperty = type.GetProperty("Id");
+                if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
+                {
+                    idProperty.SetValue(entity, id);
+                } else
+                {
+                    var properties = type.GetProperties();
+                    foreach (var property in properties )
+                    {
+                        var attributes = property.GetCustomAttributes(true);
+                        foreach (var attribute in attributes) {
+                            if (attribute is KeyAttribute)
+                            {
+                                property.SetValue(entity, id);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        public async Task Update(TEntity entity, IConnectionContext context)
+        public async Task Update(TEntity entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            await parts.Connection.UpdateAsync(entity, parts.Transaction);
+            await parts.Connection.UpdateAsync(entity, parts.Transaction, commandTimeout);
         }
 
-        public async Task Delete(TEntity entity, IConnectionContext context)
+        public async Task<bool> Delete(TEntity entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            await parts.Connection.DeleteAsync(entity, parts.Transaction);
-        }
-
-        public async Task<TEntity?> ReadSingleOrDefault(string query, object param, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.QuerySingleOrDefaultAsync<TEntity>(query, param, parts.Transaction);
-        }
-
-        public async Task<TEntity?> ReadFirstOrDefault(string query, object param, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.QueryFirstOrDefaultAsync<TEntity>(query, param, parts.Transaction);
-        }
-
-        public async Task<IEnumerable<TEntity>> ReadMany(string query, object param, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.QueryAsync<TEntity>(query, param, parts.Transaction);
-        }
-
-        public async Task<IDataReader> ReadDataReader(string query, object param, IConnectionContext context)
-        {
-            var parts = context.GetConnectionParts();
-            return await parts.Connection.ExecuteReaderAsync(query, param, parts.Transaction);
+            return await parts.Connection.DeleteAsync(entity, parts.Transaction, commandTimeout);
         }
 
         public string GetColumns()

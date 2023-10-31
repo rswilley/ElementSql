@@ -11,18 +11,24 @@ namespace ElementSql
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<IConnectionContext> StartSession()
+        public async Task<IConnectionContext> StartSession(string databaseName = "Default")
         {
-            var session = _serviceProvider.GetRequiredService<IConnectionSession>();
-            await session.BeginSessionAsync();
-            return new SessionContext(session);
+            var databases = _serviceProvider.GetServices<ISqlDatabase>();
+            var selectedDatabase = databases.SingleOrDefault(d => d.Name.Equals(databaseName, StringComparison.InvariantCultureIgnoreCase)) 
+                ?? throw new Exception($"Database {databaseName} is not registered.");
+
+            await selectedDatabase.Session.BeginSessionAsync();
+            return new SessionContext(selectedDatabase.Session);
         }
 
-        public async Task<IConnectionContext> StartUnitOfWork()
+        public async Task<IConnectionContext> StartUnitOfWork(string databaseName = "Default")
         {
-            var unitOfWork = _serviceProvider.GetRequiredService<IUnitOfWork>();
-            await unitOfWork.BeginTransactionAsync();
-            return new UnitOfWorkContext(unitOfWork);
+            var databases = _serviceProvider.GetServices<ISqlDatabase>();
+            var selectedDatabase = databases.SingleOrDefault(d => d.Name.Equals(databaseName, StringComparison.InvariantCultureIgnoreCase))
+                ?? throw new Exception($"Database {databaseName} is not registered.");
+
+            await selectedDatabase.UnitOfWork.BeginTransactionAsync();
+            return new UnitOfWorkContext(selectedDatabase.UnitOfWork);
         }
 
         public TRepository GetRepository<TRepository>() where TRepository : ISqlRepository
@@ -39,6 +45,14 @@ namespace ElementSql
             return query == null
                 ? throw new Exception($"Query {nameof(TQuery)} is not registered")
                 : query;
+        }
+
+        public TCommand GetCommand<TCommand>() where TCommand : ISqlCommand
+        {
+            var command = _serviceProvider.GetService<TCommand>();
+            return command == null
+                ? throw new Exception($"Command {nameof(TCommand)} is not registered")
+                : command;
         }
 
         private readonly IServiceProvider _serviceProvider;

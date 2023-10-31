@@ -14,8 +14,18 @@ builder.Services.AddTransient<IStorageManager, StorageManager>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
 builder.Services.AddElementSql(config =>
 {
-    config.ConnectionSession = new MySqlConnectionSession(connectionString);
-    config.UnitOfWork = new MySqlUnitOfWork(connectionString);
+    config.Databases.Add(new SqlDatabase
+    {
+        Name = "Default",
+        Session = new MySqlConnectionSession(connectionString),
+        UnitOfWork = new MySqlUnitOfWork(connectionString)
+    });
+    config.Databases.Add(new SqlDatabase
+    {
+        Name = "Default2",
+        Session = new MySqlConnectionSession(connectionString),
+        UnitOfWork = new MySqlUnitOfWork(connectionString)
+    });
 });
 
 // Configure the HTTP request pipeline.

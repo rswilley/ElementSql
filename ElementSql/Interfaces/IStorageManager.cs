@@ -6,9 +6,10 @@ namespace ElementSql.Interfaces
 {
     public interface IStorageManager
     {
-        Task<IConnectionContext> StartSession();
-        Task<IConnectionContext> StartUnitOfWork();
+        Task<IConnectionContext> StartSession(string databaseName = "Default");
+        Task<IConnectionContext> StartUnitOfWork(string databaseName = "Default");
         TRepository GetRepository<TRepository>() where TRepository : ISqlRepository;
         TQuery GetQuery<TQuery>() where TQuery : ISqlQuery;
+        TCommand GetCommand<TCommand>() where TCommand : ISqlCommand;
     }
 }
