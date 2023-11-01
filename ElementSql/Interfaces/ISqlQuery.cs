@@ -5,9 +5,4 @@
     {
 
     }
-
-    public interface ISqlCommand
-    {
-
-    }
 }

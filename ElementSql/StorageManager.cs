@@ -47,14 +47,6 @@ namespace ElementSql
                 : query;
         }
 
-        public TCommand GetCommand<TCommand>() where TCommand : ISqlCommand
-        {
-            var command = _serviceProvider.GetService<TCommand>();
-            return command == null
-                ? throw new Exception($"Command {nameof(TCommand)} is not registered")
-                : command;
-        }
-
         private readonly IServiceProvider _serviceProvider;
     }
 }

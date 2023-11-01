@@ -10,6 +10,5 @@ namespace ElementSql.Interfaces
         Task<IConnectionContext> StartUnitOfWork(string databaseName = "Default");
         TRepository GetRepository<TRepository>() where TRepository : ISqlRepository;
         TQuery GetQuery<TQuery>() where TQuery : ISqlQuery;
-        TCommand GetCommand<TCommand>() where TCommand : ISqlCommand;
     }
 }

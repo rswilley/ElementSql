@@ -21,7 +21,7 @@ namespace ElementSql.MySqlTests
             serviceCollection.AddSingleton<ITestQuery, TestQuery>();
             serviceCollection.AddTransient<IStorageManager, StorageManager>();
 
-            var connectionString = "server=office-desktop;uid=element;pwd=password;database=element";
+            var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
             serviceCollection.AddElementSql(config =>
             {
                 config.Databases.Add(new SqlDatabase
