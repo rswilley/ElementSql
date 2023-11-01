@@ -1,6 +1,6 @@
 ﻿using ElementSql.Interfaces;
-using ElementSql.MySql;
 using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
 
 namespace ElementSql.MySqlTests
 {
@@ -27,8 +27,7 @@ namespace ElementSql.MySqlTests
                 config.Databases.Add(new SqlDatabase
                 {
                     Name = "Default",
-                    Session = new MySqlConnectionSession(connectionString),
-                    UnitOfWork = new MySqlUnitOfWork(connectionString)
+                    DbConnection = () => new MySqlConnection(connectionString)
                 });
             });
 

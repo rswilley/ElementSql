@@ -28,13 +28,9 @@ public static class ServiceCollectionExtensions
         
         foreach (var database in configuration.Databases)
         {
-            if (database.Session == null)
+            if (database.DbConnection == null)
             {
-                throw new ArgumentNullException($"No ConnectionSession for database {database.Name}.");
-            }
-            if (database.UnitOfWork == null)
-            {
-                throw new ArgumentNullException($"No UnitOfWork setup for database {database.Name}.");
+                throw new ArgumentNullException($"No DbConnection provided for database {database.Name}.");
             }
 
             services.AddTransient<ISqlDatabase>(sp => database);

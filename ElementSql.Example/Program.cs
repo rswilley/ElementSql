@@ -1,7 +1,7 @@
 using ElementSql;
 using ElementSql.Example.Data.PersonRepository;
 using ElementSql.Interfaces;
-using ElementSql.MySql;
+using MySql.Data.MySqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,14 +17,12 @@ builder.Services.AddElementSql(config =>
     config.Databases.Add(new SqlDatabase
     {
         Name = "Default",
-        Session = new MySqlConnectionSession(connectionString),
-        UnitOfWork = new MySqlUnitOfWork(connectionString)
+        DbConnection = () => new MySqlConnection(connectionString)
     });
     config.Databases.Add(new SqlDatabase
     {
         Name = "Default2",
-        Session = new MySqlConnectionSession(connectionString),
-        UnitOfWork = new MySqlUnitOfWork(connectionString)
+        DbConnection = () => new MySqlConnection(connectionString)
     });
 });
 

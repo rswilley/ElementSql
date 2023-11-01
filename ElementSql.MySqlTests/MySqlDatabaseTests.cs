@@ -14,7 +14,7 @@ namespace ElementSql.MySqlTests
         [Test]
         public async Task ShouldTestQuery()
         {
-            using var session = await _storageManager.StartSession();
+            using var session = await _storageManager.StartSessionAsync();
 
             var result = await _storageManager.GetQuery<ITestQuery>().GetCurrentTime(session);
 
@@ -24,7 +24,7 @@ namespace ElementSql.MySqlTests
         [Test]
         public async Task ShouldAddRecordWithTransaction()
         {
-            using var tx = await _storageManager.StartUnitOfWork();
+            using var tx = await _storageManager.StartUnitOfWorkAsync();
 
             var testRepository = _storageManager.GetRepository<ITestRepository>();
             await testRepository.CreateElementTable(tx);

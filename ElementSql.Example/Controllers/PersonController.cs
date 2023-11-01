@@ -22,7 +22,7 @@ namespace ElementSql.Example.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            using var session = await _storageManager.StartSession();
+            using var session = await _storageManager.StartSessionAsync();
             var person = await _storageManager.GetRepository<IPersonRepository>().GetByEmailAddress("john@doe.com", session);
 
             return Ok(person);

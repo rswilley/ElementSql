@@ -13,6 +13,8 @@ namespace ElementSql.MySqlTests
         public async Task CreateElementTable(IConnectionContext context)
         {
             await Execute($@"
+                DROP TABLE IF EXISTS elements;
+
                 CREATE TABLE `elements` (
                   `Id` int NOT NULL AUTO_INCREMENT,
                   `Name` varchar(32) NOT NULL,
