@@ -1,0 +1,29 @@
+name: Main Build
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+jobs:
+  vm-job:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql
+        ports:
+        - 3306/tcp
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: .NET Build
+      run: dotnet build Build.csproj -c Release /p:CI=true
+    - name: ElementSql Tests
+      run: dotnet test ElementSql.MySqlTests/ElementSql.MySqlTests.csproj -c Release --logger GitHubActions /p:CI=true
+      env:
+        MySqlConnectionString: Server=localhost;Port=${{ job.services.mysql.ports[3306] }};Uid=root;Pwd=root;Database=test;Allow User Variables=true
