@@ -30,6 +30,6 @@ jobs:
     - name: .NET Build MySqlTests
       run: dotnet build ElementSql.MySqlTests/ElementSql.MySqlTests.csproj -c Release /p:CI=true
     - name: ElementSql Tests
-      run: dotnet test ElementSql.MySqlTests/ElementSql.MySqlTests.csproj -c Release --logger GitHubActions /p:CI=true
+      run: dotnet test ElementSql.MySqlTests/ElementSql.MySqlTests.csproj -c Release -l "console;verbosity=normal" /p:CI=true
       env:
         MySqlConnectionString: Server=localhost;Port=${{ job.services.mysql.ports[3306] }};Uid=root;Pwd=root;Database=test;Allow User Variables=true
