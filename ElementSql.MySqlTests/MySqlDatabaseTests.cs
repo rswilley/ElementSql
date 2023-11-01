@@ -22,15 +22,20 @@ namespace ElementSql.MySqlTests
         }
 
         [Test]
-        public async Task ShouldAddRecordWithConnectionSession()
+        public async Task ShouldAddRecordWithTransaction()
         {
-            using var session = await _storageManager.StartSession();
-            
-            var record = await _storageManager.GetRepository<ITestRepository>().Add(new Element
+            using var tx = await _storageManager.StartUnitOfWork();
+
+            var testRepository = _storageManager.GetRepository<ITestRepository>();
+            await testRepository.CreateElementTable(tx);
+
+            var record = await testRepository.Add(new Element
             {
                 Name = "Gold",
                 Symbol = "AU"
-            }, session);
+            }, tx);
+
+            tx.WasSuccessful = true;
 
             Assert.Multiple(() =>
             {

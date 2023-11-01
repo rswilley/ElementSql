@@ -5,11 +5,22 @@ namespace ElementSql.MySqlTests
 {
     internal interface ITestRepository : IRepository<Element>
     {
-
+        Task CreateElementTable(IConnectionContext context);
     }
 
     internal class TestRepository : RepositoryBase<Element>, ITestRepository
     {
+        public async Task CreateElementTable(IConnectionContext context)
+        {
+            await Execute($@"
+                CREATE TABLE `elements` (
+                  `Id` int NOT NULL AUTO_INCREMENT,
+                  `Name` varchar(32) NOT NULL,
+                  `Symbol` char(2) NOT NULL,
+                  `UniqueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                  PRIMARY KEY (`Id`)
+                ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;", null!, context);
+        }
     }
 
     [Table(TableConstants.Elements)]
