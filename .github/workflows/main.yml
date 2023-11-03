@@ -23,8 +23,6 @@ jobs:
       uses: actions/checkout@v1
     - name: .NET Build Core
       run: dotnet build ElementSql/ElementSql.csproj -c Release /p:CI=true
-    - name: .NET Build MySql
-      run: dotnet build ElementSql.MySql/ElementSql.MySql.csproj -c Release /p:CI=true
     - name: .NET Build Example
       run: dotnet build ElementSql.Example/ElementSql.Example.csproj -c Release /p:CI=true
     - name: .NET Build MySqlTests
