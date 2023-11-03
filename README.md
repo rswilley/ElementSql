@@ -9,8 +9,7 @@ Setting up ElementSql (MySql Example):
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
 builder.Services.AddElementSql(config =>
 {
-    config.ConnectionSession = new MySqlConnectionSession(connectionString);
-    config.UnitOfWork = new MySqlUnitOfWork(connectionString);
+    config.Databases.Add("Default", () => new MySqlConnection(connectionString));
 });
 ```
 
