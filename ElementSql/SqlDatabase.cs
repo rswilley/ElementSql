@@ -3,9 +3,9 @@ using System.Data;
 
 namespace ElementSql
 {
-    public class SqlDatabase : ISqlDatabase
+    internal class SqlDatabase : ISqlDatabase
     {
         public Func<IDbConnection> DbConnection { get; set; } = null!;
-        public string Name { get; set; } = "Default";
+        public string Name { get; set; } = null!;
     }
 }

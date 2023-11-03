@@ -24,11 +24,7 @@ namespace ElementSql.MySqlTests
             var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
             serviceCollection.AddElementSql(config =>
             {
-                config.Databases.Add(new SqlDatabase
-                {
-                    Name = "Default",
-                    DbConnection = () => new MySqlConnection(connectionString)
-                });
+                config.Databases.Add("Default", () => new MySqlConnection(connectionString));
             });
 
             ServiceProvider = serviceCollection.BuildServiceProvider();

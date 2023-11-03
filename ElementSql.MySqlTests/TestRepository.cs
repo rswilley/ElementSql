@@ -19,7 +19,6 @@ namespace ElementSql.MySqlTests
                   `Id` int NOT NULL AUTO_INCREMENT,
                   `Name` varchar(32) NOT NULL,
                   `Symbol` char(2) NOT NULL,
-                  `UniqueId` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
                   PRIMARY KEY (`Id`)
                 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;", null!, context);
         }
@@ -31,7 +30,6 @@ namespace ElementSql.MySqlTests
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;
-        public Guid UniqueId { get; set; } = Guid.NewGuid();
     }
 
     internal static class TableConstants

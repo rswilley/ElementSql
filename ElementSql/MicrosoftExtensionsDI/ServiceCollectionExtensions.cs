@@ -1,7 +1,5 @@
 ﻿using ElementSql;
 using ElementSql.Interfaces;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Data;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -22,18 +20,19 @@ public static class ServiceCollectionExtensions
         {
             throw new ArgumentNullException("No Databases setup.");
         }
-        if (configuration.Databases.Count > 1 && configuration.Databases.All(d => d.Name.ToLower() == "default")) {
-            throw new ArgumentNullException("Only one database can be named Default.");
-        }
         
         foreach (var database in configuration.Databases)
         {
-            if (database.DbConnection == null)
+            if (database.Value == null)
             {
-                throw new ArgumentNullException($"No DbConnection provided for database {database.Name}.");
+                throw new ArgumentNullException($"No DbConnection provided for database {database.Key}.");
             }
 
-            services.AddTransient<ISqlDatabase>(sp => database);
+            services.AddTransient<ISqlDatabase>(sp => new SqlDatabase
+            {
+                Name = database.Key,
+                DbConnection = database.Value
+            });
         }
 
         return services;
