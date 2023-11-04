@@ -4,8 +4,8 @@ namespace ElementSql.Interfaces
 {
     public interface IUnitOfWork
     {
-        Task BeginTransactionAsync();
-        void BeginTransaction();
+        Task BeginTransactionAsync(IsolationLevel il = IsolationLevel.Unspecified);
+        void BeginTransaction(IsolationLevel il = IsolationLevel.Unspecified);
         void Commit();
         void RollBack();
 

@@ -11,7 +11,7 @@ namespace ElementSql
             _connection = dbConnection ?? throw new ArgumentNullException($"No DbConnection provided.");
         }
 
-        public async Task BeginTransactionAsync()
+        public async Task BeginTransactionAsync(IsolationLevel il = IsolationLevel.Unspecified)
         {
             try
             {
@@ -24,7 +24,7 @@ namespace ElementSql
                     throw new InvalidOperationException("Async operations require use of a DbConnection or an already-open IDbConnection");
                 }
 
-                _transaction = _connection.BeginTransaction();
+                _transaction = _connection.BeginTransaction(il);
             }
             catch (Exception)
             {
@@ -35,12 +35,12 @@ namespace ElementSql
             }
         }
 
-        public void BeginTransaction()
+        public void BeginTransaction(IsolationLevel il = IsolationLevel.Unspecified)
         {
             try
             {
                 _connection.Open();
-                _transaction = _connection.BeginTransaction();
+                _transaction = _connection.BeginTransaction(il);
             } catch (Exception)
             {
                 _transaction.Dispose();

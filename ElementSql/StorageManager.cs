@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ElementSql
 {
-    public class StorageManager : IStorageManager
+    internal class StorageManager : IStorageManager
     {
         public StorageManager(
             IServiceProvider serviceProvider)

@@ -1,5 +1,7 @@
 using ElementSql.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
+using System.Collections;
 
 namespace ElementSql.MySqlTests
 {
@@ -9,137 +11,155 @@ namespace ElementSql.MySqlTests
         public void Setup()
         {
             _storageManager = ServiceProvider.GetRequiredService<IStorageManager>();
-            _testRepository = _storageManager.GetRepository<ITestRepository>();
+            _elementRepository = _storageManager.GetRepository<IElementRepository>();
         }
 
         [Test]
         public async Task ShouldValidateCrudOperationsWithTransaction()
         {
-            // Create table
-            await ShouldCreateDatabaseTable();
-
-            // Create
-            var record = await ShouldCreateRecord();
-
-            // Read
-            await ShouldReadRecord(record.Id);
-
-            // Update
-            record.Name = "Silver";
-            record.Symbol = "Ag";
-            await ShouldUpdateRecord(record);
-
-            // Delete
-            await ShouldDeleteRecord(record);
-
-            async Task ShouldCreateDatabaseTable()
+            // Begin Transaction
+            using (var tx = await _storageManager.StartUnitOfWorkAsync())
             {
-                using var tx = await _storageManager.StartUnitOfWorkAsync();
+                // Create table for use in CRUD operations
+                await ShouldCreateDatabaseTable(tx);
 
-                await _testRepository.CreateElementTable(tx);
-
-                tx.WasSuccessful = true;
-            }
-
-            async Task<Element> ShouldCreateRecord()
-            {
-                using var tx = await _storageManager.StartUnitOfWorkAsync();
-
-                var record = await _testRepository.Add(new Element
+                // Create
+                var createdRecord = await ShouldCreateRecord(new Element
                 {
                     Name = "Gold",
                     Symbol = "Au"
                 }, tx);
 
-                tx.WasSuccessful = true;
+                Assert.Multiple(() =>
+                {
+                    Assert.That(createdRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(createdRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(createdRecord.Symbol, Is.EqualTo("Au"));
+                });
+
+                // Read
+                var readRecord = await ShouldReadRecord(createdRecord.Id, tx);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(0));
-                    Assert.That(record.Name, Is.EqualTo("Gold"));
-                    Assert.That(record.Symbol, Is.EqualTo("Au"));
+                    Assert.That(readRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(readRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(readRecord.Symbol, Is.EqualTo("Au"));
                 });
 
-                return record;
-            }
-
-            async Task ShouldReadRecord(int recordId)
-            {
-                using var tx = await _storageManager.StartUnitOfWorkAsync();
-
-                var record = await _testRepository.GetById(recordId, tx);
-
-                tx.WasSuccessful = true;
+                // Update
+                createdRecord.Name = "Silver";
+                createdRecord.Symbol = "Ag";
+                var updatedRecord = await ShouldUpdateRecord(createdRecord, tx);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(1));
-                    Assert.That(record.Name, Is.EqualTo("Gold"));
-                    Assert.That(record.Symbol, Is.EqualTo("Au"));
+                    Assert.That(updatedRecord.Name, Is.EqualTo("Silver"));
+                    Assert.That(updatedRecord.Symbol, Is.EqualTo("Ag"));
                 });
+
+                // Get All
+                var allRecords = await ShouldGetAllRecords(tx);
+
+                Assert.That(allRecords.Count(), Is.EqualTo(1));
+
+                // Delete
+                var deletedRecord = await ShouldDeleteRecord(createdRecord, tx);
+
+                Assert.That(deletedRecord, Is.Null);
+
+                // Drop table for cleanup
+                await ShouldDropDatabaseTable(tx);
+
+                // Commit transaction
+                tx.WasSuccessful = true;
             }
 
-            async Task ShouldUpdateRecord(Element recordToUpdate)
+            // Expected: MySqlException : Table 'element.elements' doesn't exist
+            IEnumerable records = Enumerable.Empty<Element>();
+            using var session = await _storageManager.StartSessionAsync();
+            Assert.ThrowsAsync<MySqlException>(async () => await _elementRepository.GetAll(session), "Table 'element.elements' doesn't exist");
+        }
+
+        [Test]
+        public async Task ShouldValidateCrudOperationsWithFailedTransaction()
+        {
+            // Begin Transaction
+            using (var tx = await _storageManager.StartUnitOfWorkAsync())
             {
-                using var tx = await _storageManager.StartUnitOfWorkAsync();
+                // Create table for use in CRUD operations
+                await ShouldCreateDatabaseTable(tx);
 
-                await _testRepository.Update(recordToUpdate, tx);
-
-                tx.WasSuccessful = true;
+                // Create
+                var createdRecord = await ShouldCreateRecord(new Element
+                {
+                    Name = "Gold",
+                    Symbol = "Au"
+                }, tx);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(1));
-                    Assert.That(record.Name, Is.EqualTo("Silver"));
-                    Assert.That(record.Symbol, Is.EqualTo("Ag"));
+                    Assert.That(createdRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(createdRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(createdRecord.Symbol, Is.EqualTo("Au"));
                 });
+
+                // Read
+                var readRecord = await ShouldReadRecord(createdRecord.Id, tx);
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(readRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(readRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(readRecord.Symbol, Is.EqualTo("Au"));
+                });
+
+                // Update
+                createdRecord.Name = "Silver";
+                createdRecord.Symbol = "Ag";
+                var updatedRecord = await ShouldUpdateRecord(createdRecord, tx);
+
+                Assert.Multiple(() =>
+                {
+                    Assert.That(updatedRecord.Name, Is.EqualTo("Silver"));
+                    Assert.That(updatedRecord.Symbol, Is.EqualTo("Ag"));
+                });
+
+                // Get All
+                var allRecords = await ShouldGetAllRecords(tx);
+
+                Assert.That(allRecords.Count(), Is.EqualTo(1));
+
+                // Delete
+                var deletedRecord = await ShouldDeleteRecord(createdRecord, tx);
+
+                Assert.That(deletedRecord, Is.Null);
+
+                // Simulate Error (Rollback)
+                tx.WasSuccessful = false;
             }
 
-            async Task ShouldDeleteRecord(Element recordToDelete)
-            {
-                using var tx = await _storageManager.StartUnitOfWorkAsync();
+            // No records in table
+            using var session = await _storageManager.StartSessionAsync();
+            var records = await _elementRepository.GetAll(session);
 
-                await _testRepository.Delete(recordToDelete, tx);
-                var deleted = await _testRepository.GetById(recordToDelete.Id, tx);
+            Assert.That(records, Is.Empty);
 
-                tx.WasSuccessful = true;
-
-                Assert.That(deleted, Is.Null);
-            }
+            // Drop table for cleanup
+            await ShouldDropDatabaseTable(session);
         }
 
         [Test]
         public async Task ShouldValidateCrudOperationsWithSession()
         {
-            // Create table
-            await ShouldCreateDatabaseTable();
-
-            // Create
-            var record = await ShouldCreateRecord();
-
-            // Read
-            await ShouldReadRecord(record.Id);
-
-            // Update
-            record.Name = "Silver";
-            record.Symbol = "Ag";
-            await ShouldUpdateRecord(record);
-
-            // Delete
-            await ShouldDeleteRecord(record);
-
-            async Task ShouldCreateDatabaseTable()
+            // Begin Session
+            using (var session = await _storageManager.StartSessionAsync())
             {
-                using var session = await _storageManager.StartSessionAsync();
+                // Create table for use in CRUD operations
+                await ShouldCreateDatabaseTable(session);
 
-                await _testRepository.CreateElementTable(session);
-            }
-
-            async Task<Element> ShouldCreateRecord()
-            {
-                using var session = await _storageManager.StartSessionAsync();
-
-                var record = await _testRepository.Add(new Element
+                // Create
+                var createdRecord = await ShouldCreateRecord(new Element
                 {
                     Name = "Gold",
                     Symbol = "Au"
@@ -147,88 +167,111 @@ namespace ElementSql.MySqlTests
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(0));
-                    Assert.That(record.Name, Is.EqualTo("Gold"));
-                    Assert.That(record.Symbol, Is.EqualTo("Au"));
+                    Assert.That(createdRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(createdRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(createdRecord.Symbol, Is.EqualTo("Au"));
                 });
 
-                return record;
-            }
-
-            async Task ShouldReadRecord(int recordId)
-            {
-                using var session = await _storageManager.StartSessionAsync();
-
-                var record = await _testRepository.GetById(recordId, session);
+                // Read
+                var readRecord = await ShouldReadRecord(createdRecord.Id, session);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(1));
-                    Assert.That(record.Name, Is.EqualTo("Gold"));
-                    Assert.That(record.Symbol, Is.EqualTo("Au"));
+                    Assert.That(readRecord.Id, Is.Not.EqualTo(0));
+                    Assert.That(readRecord.Name, Is.EqualTo("Gold"));
+                    Assert.That(readRecord.Symbol, Is.EqualTo("Au"));
                 });
-            }
 
-            async Task ShouldUpdateRecord(Element recordToUpdate)
-            {
-                using var session = await _storageManager.StartSessionAsync();
-
-                await _testRepository.Update(recordToUpdate, session);
+                // Update
+                createdRecord.Name = "Silver";
+                createdRecord.Symbol = "Ag";
+                var updatedRecord = await ShouldUpdateRecord(createdRecord, session);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(record.Id, Is.Not.EqualTo(1));
-                    Assert.That(record.Name, Is.EqualTo("Silver"));
-                    Assert.That(record.Symbol, Is.EqualTo("Ag"));
+                    Assert.That(updatedRecord.Name, Is.EqualTo("Silver"));
+                    Assert.That(updatedRecord.Symbol, Is.EqualTo("Ag"));
                 });
+
+                // Get All
+                var allRecords = await ShouldGetAllRecords(session);
+
+                Assert.That(allRecords.Count(), Is.EqualTo(1));
+
+                // Delete
+                var deletedRecord = await ShouldDeleteRecord(createdRecord, session);
+
+                Assert.That(deletedRecord, Is.Null);
+
+                // Drop table for cleanup
+                await ShouldDropDatabaseTable(session);
+
+                // Commit transaction
+                session.WasSuccessful = true;
             }
 
-            async Task ShouldDeleteRecord(Element recordToDelete)
-            {
-                using var session = await _storageManager.StartSessionAsync();
-
-                await _testRepository.Delete(recordToDelete, session);
-                var deleted = await _testRepository.GetById(recordToDelete.Id, session);
-
-                Assert.That(deleted, Is.Null);
-            }
+            // Expected: MySqlException : Table 'element.elements' doesn't exist
+            IEnumerable records = Enumerable.Empty<Element>();
+            using var session2 = await _storageManager.StartSessionAsync();
+            Assert.ThrowsAsync<MySqlException>(async () => await _elementRepository.GetAll(session2), "Table 'element.elements' doesn't exist");
         }
 
-        //[Test]
-        //public async Task ShouldTestQuery()
-        //{
-        //    using var session = await _storageManager.StartSessionAsync();
+        private async Task ShouldDropDatabaseTable(IConnectionContext context)
+        {
+            await _elementRepository.DropTable(context);
+        }
 
-        //    var result = await _storageManager.GetQuery<ITestQuery>().GetCurrentTime(session);
+        private async Task ShouldCreateDatabaseTable(IConnectionContext context)
+        {
+            // Drop table in case clean up failed
+            await ShouldDropDatabaseTable(context);
+            // Create Table - will cause an implicit commit (if transaction)
+            await _elementRepository.CreateTable(context);
+        }
 
-        //    Assert.That(result, Is.Not.EqualTo(DateTime.MinValue));
-        //}
+        private async Task<Element> ShouldCreateRecord(Element toInsert, IConnectionContext context)
+        {
+            var record = await _elementRepository.Add(toInsert, context);
+            return record;
+        }
 
-        //[Test]
-        //public async Task ShouldAddRecordWithCommittedTransaction()
-        //{
-        //    using var tx = await _storageManager.StartUnitOfWorkAsync();
+        private async Task<Element> ShouldReadRecord(int recordId, IConnectionContext context)
+        {
+            var record = await _elementRepository.GetById(recordId, context);
+            return record;
+        }
 
-        //    var testRepository = _storageManager.GetRepository<ITestRepository>();
-        //    await testRepository.CreateElementTable(tx);
+        private async Task<Element> ShouldUpdateRecord(Element recordToUpdate, IConnectionContext context)
+        {
+            await _elementRepository.Update(recordToUpdate, context);
+            var updatedRecord = await _elementRepository.GetById(recordToUpdate.Id, context);
+            return updatedRecord;
+        }
 
-        //    var record = await testRepository.Add(new Element
-        //    {
-        //        Name = "Gold",
-        //        Symbol = "AU"
-        //    }, tx);
+        private async Task<IEnumerable<Element>> ShouldGetAllRecords(IConnectionContext context)
+        {
+            var allRecords = await _elementRepository.GetAll(context);
+            return allRecords;
+        }
 
-        //    tx.WasSuccessful = true;
+        private async Task<Element> ShouldDeleteRecord(Element recordToDelete, IConnectionContext context)
+        {
+            await _elementRepository.Delete(recordToDelete, context);
+            var deleted = await _elementRepository.GetById(recordToDelete.Id, context);
+            return deleted;
+        }
 
-        //    Assert.Multiple(() =>
-        //    {
-        //        Assert.That(record.Id, Is.Not.EqualTo(0));
-        //        Assert.That(record.Name, Is.EqualTo("Gold"));
-        //        Assert.That(record.Symbol, Is.EqualTo("AU"));
-        //    });
-        //}
+        [Test]
+        public async Task ShouldTestQuery()
+        {
+            using var session = await _storageManager.StartSessionAsync();
+
+            var result = await _storageManager.GetQuery<ITestQuery>().GetCurrentTime(session);
+
+            Assert.That(result, Is.Not.EqualTo(DateTime.MinValue));
+        }
 
         private IStorageManager _storageManager;
-        private ITestRepository _testRepository;
+        private IElementRepository _elementRepository;
     }
 }

@@ -1,13 +1,6 @@
 ﻿using Dapper.Contrib.Extensions;
 using ElementSql.Interfaces;
 
-// GetAsync - impl
-// GetAllAsync - impl
-// InsertAsync - impl
-// UpdateAsync - impl
-// DeleteAsync - impl
-// DeleteAllAsync
-
 namespace ElementSql
 {
     public abstract class RepositoryBase<TEntity> : QueryBase where TEntity : class

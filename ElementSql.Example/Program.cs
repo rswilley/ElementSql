@@ -1,6 +1,4 @@
-using ElementSql;
 using ElementSql.Example.Data.PersonRepository;
-using ElementSql.Interfaces;
 using MySql.Data.MySqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IPersonRepository, PersonRepository>();
-builder.Services.AddTransient<IStorageManager, StorageManager>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
 builder.Services.AddElementSql(config =>

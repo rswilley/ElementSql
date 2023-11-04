@@ -17,7 +17,7 @@ namespace ElementSql.MySqlTests
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddSingleton<ITestRepository, TestRepository>();
+            serviceCollection.AddSingleton<IElementRepository, ElementRepository>();
             serviceCollection.AddSingleton<ITestQuery, TestQuery>();
             serviceCollection.AddTransient<IStorageManager, StorageManager>();
 

@@ -35,6 +35,8 @@ public static class ServiceCollectionExtensions
             });
         }
 
+        services.AddTransient<IStorageManager, StorageManager>();
+
         return services;
     }
 }
