@@ -11,7 +11,7 @@ namespace ElementSql.MySqlTests
     {
         public async Task<DateTime> GetCurrentTime(IConnectionContext context)
         {
-            return await ReadScalar<DateTime>("SELECT UTC_TIMESTAMP()", null!, context);
+            return await ReadScalarAsync<DateTime>("SELECT UTC_TIMESTAMP()", null!, context);
         }
     }
 }

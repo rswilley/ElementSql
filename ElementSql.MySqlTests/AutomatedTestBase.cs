@@ -19,7 +19,6 @@ namespace ElementSql.MySqlTests
 
             serviceCollection.AddSingleton<IElementRepository, ElementRepository>();
             serviceCollection.AddSingleton<ITestQuery, TestQuery>();
-            serviceCollection.AddTransient<IStorageManager, StorageManager>();
 
             var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
             serviceCollection.AddElementSql(config =>

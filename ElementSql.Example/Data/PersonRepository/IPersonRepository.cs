@@ -11,7 +11,7 @@ namespace ElementSql.Example.Data.PersonRepository
     {
         public async Task<Person?> GetByEmailAddress(string emailAddress, IConnectionContext context)
         {
-            return await ReadSingleOrDefault<Person>($@"
+            return await ReadSingleOrDefaultAsync<Person>($@"
                 SELECT {GetColumns()} 
                 FROM {Table} 
                 WHERE {nameof(Person.EmailAddress)} = @EmailAddress",

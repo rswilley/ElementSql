@@ -6,15 +6,15 @@ namespace ElementSql.MySqlTests
     internal interface IElementRepository : IRepository<Element>
     {
         Task CreateTable(IConnectionContext context);
-        Task DropTable(IConnectionContext context);
+        Task TruncateTable(IConnectionContext context);
     }
 
     internal class ElementRepository : RepositoryBase<Element>, IElementRepository
     {
         public async Task CreateTable(IConnectionContext context)
         {
-            await Execute(@"
-                CREATE TABLE `elements` (
+            await ExecuteAsync(@"
+                CREATE TABLE IF NOT EXISTS `elements` (
                   `Id` int NOT NULL AUTO_INCREMENT,
                   `Name` varchar(32) NOT NULL,
                   `Symbol` char(2) NOT NULL,
@@ -22,9 +22,9 @@ namespace ElementSql.MySqlTests
                 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;", null!, context);
         }
 
-        public async Task DropTable(IConnectionContext context)
+        public async Task TruncateTable(IConnectionContext context)
         {
-            await Execute("DROP TABLE IF EXISTS elements;", null!, context);
+            await ExecuteAsync(@"TRUNCATE TABLE elements;", null!, context);
         }
     }
 
