@@ -58,7 +58,7 @@ public static class ServiceCollectionExtensions
 
     private static void AutoRegister(IServiceCollection services, Assembly assembly, string classNameEndsWith, string interfaceName, ServiceLifetime serviceLifetime)
     {
-        var toRegister = assembly.ExportedTypes
+        var toRegister = assembly.DefinedTypes
                     .Where(t => t.IsClass && t.Name.EndsWith(classNameEndsWith))
                     .SelectMany(t => t.GetInterfaces(), (c, i) => new { Class = c, Interface = i })
                     .ToList();
