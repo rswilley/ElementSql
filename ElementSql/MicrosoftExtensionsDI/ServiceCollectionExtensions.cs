@@ -1,5 +1,6 @@
 ﻿using ElementSql;
 using ElementSql.Interfaces;
+using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -37,6 +38,43 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IStorageManager, StorageManager>();
 
+        if (configuration.Registration != null && 
+            configuration.Registration.Autoregister && 
+            configuration.Registration.AssemblyLocation != null)
+        {
+            var assembly = Assembly.GetAssembly(configuration.Registration.AssemblyLocation);
+            if (assembly != null)
+            {
+                AutoRegister(services, assembly, "Repository", "IElementSqlRepository", configuration.Registration.ServiceLifetime);
+                AutoRegister(services, assembly, "Query", "IElementSqlQuery", configuration.Registration.ServiceLifetime);
+            } else
+            {
+                throw new ArgumentNullException("Repository registration assembly not found.");
+            }
+        }
+
         return services;
+    }
+
+    private static void AutoRegister(IServiceCollection services, Assembly assembly, string classNameEndsWith, string interfaceName, ServiceLifetime serviceLifetime)
+    {
+        var toRegister = assembly.ExportedTypes
+                    .Where(t => t.IsClass && t.Name.EndsWith(classNameEndsWith))
+                    .SelectMany(t => t.GetInterfaces(), (c, i) => new { Class = c, Interface = i })
+                    .ToList();
+
+        foreach (var item in toRegister)
+        {
+            var elementSqlRepository = toRegister.SingleOrDefault(r => r.Class.Name == item.Class.Name && r.Interface.Name == interfaceName);
+            if (elementSqlRepository == null)
+            {
+                continue;
+            }
+
+            if ("I" + item.Class.Name == item.Interface.Name)
+            {
+                services.Add(new ServiceDescriptor(item.Interface, item.Class, serviceLifetime));
+            }
+        }
     }
 }

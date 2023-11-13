@@ -2,7 +2,7 @@
 
 namespace ElementSql.MySqlTests
 {
-    internal interface ITestQuery : ISqlQuery
+    internal interface ITestQuery : IElementSqlQuery
     {
         Task<DateTime> GetCurrentTime(IConnectionContext context);
     }
@@ -11,7 +11,7 @@ namespace ElementSql.MySqlTests
     {
         public async Task<DateTime> GetCurrentTime(IConnectionContext context)
         {
-            return await ReadScalarAsync<DateTime>("SELECT UTC_TIMESTAMP()", null!, context);
+            return await ExecuteScalarAsync<DateTime>("SELECT UTC_TIMESTAMP()", null!, context);
         }
     }
 }

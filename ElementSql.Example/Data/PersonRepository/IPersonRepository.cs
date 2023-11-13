@@ -11,16 +11,11 @@ namespace ElementSql.Example.Data.PersonRepository
     {
         public async Task<Person?> GetByEmailAddress(string emailAddress, IConnectionContext context)
         {
-            return await ReadSingleOrDefaultAsync<Person>($@"
-                SELECT {GetColumns()} 
-                FROM {Table} 
-                WHERE {nameof(Person.EmailAddress)} = @EmailAddress",
+            return await QuerySingleOrDefaultAsync($"WHERE {nameof(Person.EmailAddress)} = @EmailAddress",
                 new
                 {
                     emailAddress
                 }, context);
         }
-
-        internal const string Table = TableConstants.Person;
     }
 }

@@ -39,7 +39,7 @@ namespace ElementSql
             return new UnitOfWorkContext(unitOfWork);
         }
 
-        public TRepository GetRepository<TRepository>() where TRepository : ISqlRepository
+        public TRepository GetRepository<TRepository>() where TRepository : IElementSqlRepository
         {
             var repository = _serviceProvider.GetService<TRepository>();
             return repository == null 
@@ -47,7 +47,7 @@ namespace ElementSql
                 : repository;
         }
 
-        public TQuery GetQuery<TQuery>() where TQuery : ISqlQuery
+        public TQuery GetQuery<TQuery>() where TQuery : IElementSqlQuery
         {
             var query = _serviceProvider.GetService<TQuery>();
             return query == null

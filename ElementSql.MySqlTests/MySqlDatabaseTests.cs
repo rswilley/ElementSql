@@ -359,7 +359,7 @@ namespace ElementSql.MySqlTests
 
         private async Task<Element> ShouldCreateRecord(Element toInsert, IConnectionContext context)
         {
-            var record = await _elementRepository.AddAsync(toInsert, context);
+            var record = await _elementRepository.InsertAsync(toInsert, context);
             return record;
         }
 

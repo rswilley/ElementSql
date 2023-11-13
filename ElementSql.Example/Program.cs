@@ -6,13 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.AddSingleton<IPersonRepository, PersonRepository>();
+//builder.Services.AddSingleton<IPersonRepository, PersonRepository>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
 builder.Services.AddElementSql(config =>
 {
     config.Databases.Add("Default", () => new MySqlConnection(connectionString));
     config.Databases.Add("Default2", () => new MySqlConnection(connectionString));
+    config.Registration = new ElementSqlRegistration { 
+        Autoregister = true,
+        AssemblyLocation = typeof(Program),
+        ServiceLifetime = ServiceLifetime.Singleton
+    };
 });
 
 // Configure the HTTP request pipeline.

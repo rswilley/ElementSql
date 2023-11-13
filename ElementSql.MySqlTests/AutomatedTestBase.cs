@@ -1,5 +1,6 @@
 ﻿using ElementSql.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.VisualStudio.TestPlatform.TestHost;
 using MySql.Data.MySqlClient;
 
 namespace ElementSql.MySqlTests
@@ -17,13 +18,16 @@ namespace ElementSql.MySqlTests
         {
             var serviceCollection = new ServiceCollection();
 
-            serviceCollection.AddSingleton<IElementRepository, ElementRepository>();
-            serviceCollection.AddSingleton<ITestQuery, TestQuery>();
-
             var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
             serviceCollection.AddElementSql(config =>
             {
                 config.Databases.Add("Default", () => new MySqlConnection(connectionString));
+                config.Registration = new ElementSqlRegistration
+                {
+                    Autoregister = true,
+                    AssemblyLocation = typeof(AutomatedTestBase),
+                    ServiceLifetime = ServiceLifetime.Singleton
+                };
             });
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
