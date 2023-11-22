@@ -43,7 +43,7 @@ namespace ElementSql
         {
             var repository = _serviceProvider.GetService<TRepository>();
             return repository == null 
-                ? throw new Exception($"Repository {nameof(TRepository)} is not registered") 
+                ? throw new Exception($"Repository {typeof(TRepository).Name} is not registered") 
                 : repository;
         }
 
@@ -51,7 +51,7 @@ namespace ElementSql
         {
             var query = _serviceProvider.GetService<TQuery>();
             return query == null
-                ? throw new Exception($"Query {nameof(TQuery)} is not registered")
+                ? throw new Exception($"Query {typeof(TQuery).Name} is not registered")
                 : query;
         }
 

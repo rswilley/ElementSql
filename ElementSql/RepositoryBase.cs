@@ -1,7 +1,10 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using ElementSql.Interfaces;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
 
 namespace ElementSql
 {
@@ -411,6 +414,9 @@ namespace ElementSql
             return parts.Connection.ExecuteReader(query, param, parts.Transaction, commandTimeout, commandType);
         }
 
+        private static readonly ConcurrentDictionary<Type, string> _tableNames = new();
+        private static readonly ConcurrentDictionary<Type, string> _identities = new();
+
         private static string BuildQuery(string filter)
         {
             var query = $@"
@@ -428,49 +434,42 @@ namespace ElementSql
         private static string GetTable()
         {
             var type = typeof(T);
-            var attributes = type.GetCustomAttributes(false);
-            foreach (var attribute in attributes)
+
+            if (_tableNames.TryGetValue(type, out var tableName))
             {
-                if (attribute is TableAttribute tableAttribute)
+                return tableName;
+
+            } else
+            {
+                var attributes = type.GetCustomAttributes(false);
+                foreach (var attribute in attributes)
                 {
-                    return tableAttribute.Name;
+                    if (attribute is TableAttribute tableAttribute)
+                    {
+                        _tableNames.TryAdd(type, tableAttribute.Name);
+                        return tableAttribute.Name;
+                    }
                 }
             }
 
             throw new Exception("Table attribute is not set on entity.");
         }
 
-        private static void TryToSetIdentityProperty<T>(T entity, int id)
+        private static void TryToSetIdentityProperty(T entity, dynamic id)
         {
             var type = entity!.GetType();
-            var idProperty = type.GetProperty("Id");
-            if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
-            {
-                idProperty.SetValue(entity, id);
-            }
-            else
-            {
-                var properties = type.GetProperties();
-                foreach (var property in properties)
-                {
-                    var attributes = property.GetCustomAttributes(true);
-                    foreach (var attribute in attributes)
-                    {
-                        if (attribute is KeyAttribute)
-                        {
-                            property.SetValue(entity, id);
-                        }
-                    }
-                }
-            }
-        }
 
-        private static void TryToSetIdentityProperty<T>(T entity, long id)
-        {
-            var type = entity!.GetType();
-            var idProperty = type.GetProperty("Id");
+            PropertyInfo? idProperty;
+            if (_identities.TryGetValue(type, out var identityName))
+            {
+                idProperty = type.GetProperty(identityName);
+                idProperty?.SetValue(entity, id);
+            }
+
+            idProperty = type.GetProperty("Id");
             if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
             {
+                _identities.TryAdd(type, idProperty.Name);
                 idProperty.SetValue(entity, id);
             }
             else
@@ -483,6 +482,7 @@ namespace ElementSql
                     {
                         if (attribute is KeyAttribute)
                         {
+                            _identities.TryAdd(type, property.Name);
                             property.SetValue(entity, id);
                         }
                     }

@@ -3,26 +3,24 @@ using ElementSql.Interfaces;
 
 namespace ElementSql.MySqlTests
 {
-    internal interface IElementRepository : IRepository<Element>
+    public interface IElementRepository : IRepository<Element>
     {
-
+        Task<Element?> GetByName(string name, IConnectionContext context);
     }
 
-    internal class ElementRepository : RepositoryBase<Element>, IElementRepository
+    public class ElementRepository : RepositoryBase<Element>, IElementRepository
     {
-        
+        public async Task<Element?> GetByName(string name, IConnectionContext context)
+        {
+            return await QueryFirstOrDefaultAsync($"WHERE {nameof(Element.Name)} = @Name", new { name }, context);
+        }
     }
 
-    [Table(TableConstants.Elements)]
-    internal class Element
+    [Table("elements")]
+    public class Element
     {
         public int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;
-    }
-
-    internal static class TableConstants
-    {
-        public const string Elements = "elements";
     }
 }

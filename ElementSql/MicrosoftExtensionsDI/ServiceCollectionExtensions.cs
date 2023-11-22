@@ -45,8 +45,8 @@ public static class ServiceCollectionExtensions
             var assembly = Assembly.GetAssembly(configuration.Registration.AssemblyLocation);
             if (assembly != null)
             {
-                AutoRegister(services, assembly, "Repository", "IElementSqlRepository", configuration.Registration.ServiceLifetime);
-                AutoRegister(services, assembly, "Query", "IElementSqlQuery", configuration.Registration.ServiceLifetime);
+                AutoRegister(services, assembly, "Repository", nameof(IElementSqlRepository), configuration.Registration.ServiceLifetime);
+                AutoRegister(services, assembly, "Query", nameof(IElementSqlQuery), configuration.Registration.ServiceLifetime);
             } else
             {
                 throw new ArgumentNullException("Repository registration assembly not found.");
