@@ -26,9 +26,9 @@ using (var transaction = await _storageManager.StartUnitOfWork()) {
       FirstName = user.FirstName,
       LastName = user.LastName,
       CreatedDate = DateTime.UtcNow
-  }, unitOfWorkContext);
+  }, transaction);
 
-  unitOfWorkContext.WasSuccessful = true; //Commits the transaction when Dispose is called
+  transaction.WasSuccessful = true; //Commits the transaction when Dispose is called
 }
 ```
 
