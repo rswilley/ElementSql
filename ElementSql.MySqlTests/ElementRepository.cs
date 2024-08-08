@@ -1,4 +1,4 @@
-﻿using Dapper.Contrib.Extensions;
+﻿using ElementSql.Attributes;
 using ElementSql.Interfaces;
 
 namespace ElementSql.MySqlTests

@@ -22,13 +22,13 @@ namespace ElementSql.MySqlTests
             return record;
         }
 
-        protected async Task<Element> ShouldReadRecord(int recordId, IConnectionContext context)
+        protected async Task<Element?> ShouldReadRecord(int recordId, IConnectionContext context)
         {
             var record = await ElementRepository.GetByIdAsync(recordId, context);
             return record;
         }
 
-        protected async Task<Element> ShouldUpdateRecord(Element recordToUpdate, IConnectionContext context)
+        protected async Task<Element?> ShouldUpdateRecord(Element recordToUpdate, IConnectionContext context)
         {
             await ElementRepository.UpdateAsync(recordToUpdate, context);
             var updatedRecord = await ElementRepository.GetByIdAsync(recordToUpdate.Id, context);
@@ -41,9 +41,9 @@ namespace ElementSql.MySqlTests
             return allRecords;
         }
 
-        protected async Task<Element> ShouldDeleteRecord(Element recordToDelete, IConnectionContext context)
+        protected async Task<Element?> ShouldDeleteRecord(Element recordToDelete, IConnectionContext context)
         {
-            await ElementRepository.DeleteAsync(recordToDelete, context);
+            await ElementRepository.DeleteAsync(recordToDelete.Id, context);
             var deleted = await ElementRepository.GetByIdAsync(recordToDelete.Id, context);
             return deleted;
         }

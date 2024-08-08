@@ -4,7 +4,7 @@ namespace ElementSql
 {
     public class ConnectionParts
     {
-        public IDbConnection Connection { get; set; } = null!;
-        public IDbTransaction? Transaction { get; set; }
+        public IDbConnection Connection { get; internal set; } = null!;
+        public IDbTransaction? Transaction { get; internal set; }
     }
 }

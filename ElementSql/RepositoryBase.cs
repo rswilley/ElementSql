@@ -1,10 +1,6 @@
 ﻿using Dapper;
-using Dapper.Contrib.Extensions;
 using ElementSql.Interfaces;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Data;
-using System.Reflection;
 
 namespace ElementSql
 {
@@ -20,10 +16,12 @@ namespace ElementSql
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
         /// <returns>Entity of T</returns>
-        public async Task<T> GetByIdAsync(object id, IConnectionContext context, int? commandTimeout = null)
+        public async Task<T?> GetByIdAsync(object id, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return await parts.Connection.GetAsync<T>(id, parts.Transaction, commandTimeout);
+            var query = BuildQuery("WHERE Id = @Id");
+
+            return await parts.Connection.QuerySingleOrDefaultAsync<T>(query, new { id }, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -39,7 +37,9 @@ namespace ElementSql
         public async Task<IEnumerable<T>> GetAllAsync(IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return await parts.Connection.GetAllAsync<T>(parts.Transaction, commandTimeout);
+            var query = BuildQuery("");
+
+            return await parts.Connection.QueryAsync<T>(query, new { }, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace ElementSql
         public async Task<T> InsertAsync(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var id = await parts.Connection.InsertAsync(entity, parts.Transaction, commandTimeout);
+            var id = await parts.Connection.ExecuteAsync(ColumnBuilder<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
 
-            TryToSetIdentityProperty(entity, id);
+            ColumnBuilder<T>.TryToSetIdentityProperty(entity, id);
 
             return entity;
         }
@@ -71,21 +71,49 @@ namespace ElementSql
         public async Task UpdateAsync(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            await parts.Connection.UpdateAsync(entity, parts.Transaction, commandTimeout);
+            await parts.Connection.ExecuteAsync(ColumnBuilder<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
         /// Delete entity in table "Ts" asynchronously using Task.
         /// </summary>
-        /// <typeparam name="T">Type of entity</typeparam>
-        /// <param name="entity">Entity to delete</param>
+        /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        /// <returns>true if deleted, false if not found</returns>
-        public async Task<bool> DeleteAsync(T entity, IConnectionContext context, int? commandTimeout = null)
+        public async Task DeleteAsync(int key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return await parts.Connection.DeleteAsync(entity, parts.Transaction, commandTimeout);
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
+        }
+
+        /// <summary>
+        /// Delete entity in table "Ts" asynchronously using Task.
+        /// </summary>
+        /// <param name="key">key to delete</param>
+        /// <param name="context">The connection context from Storage Manager</param>
+        /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
+        public async Task DeleteAsync(long key, IConnectionContext context, int? commandTimeout = null)
+        {
+            var parts = context.GetConnectionParts();
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
+        }
+
+        /// <summary>
+        /// Delete entity in table "Ts" asynchronously using Task.
+        /// </summary>
+        /// <param name="key">key to delete</param>
+        /// <param name="context">The connection context from Storage Manager</param>
+        /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
+        public async Task DeleteAsync(Guid key, IConnectionContext context, int? commandTimeout = null)
+        {
+            var parts = context.GetConnectionParts();
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -214,10 +242,12 @@ namespace ElementSql
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
         /// <returns>Entity of T</returns>
-        public T GetById(object id, IConnectionContext context, int? commandTimeout = null)
+        public T? GetById(object id, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return parts.Connection.Get<T>(id, parts.Transaction, commandTimeout);
+            var query = BuildQuery("WHERE Id = @Id");
+
+            return parts.Connection.QuerySingleOrDefault<T>(query, new { id }, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -233,7 +263,9 @@ namespace ElementSql
         public IEnumerable<T> GetAll(IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return parts.Connection.GetAll<T>(parts.Transaction, commandTimeout);
+            var query = BuildQuery("");
+
+            return parts.Connection.Query<T>(query, null, parts.Transaction, true, commandTimeout);
         }
 
         /// <summary>
@@ -247,9 +279,9 @@ namespace ElementSql
         public T Insert(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var id = parts.Connection.Insert(entity, parts.Transaction, commandTimeout);
+            var id = parts.Connection.Execute(ColumnBuilder<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
 
-            TryToSetIdentityProperty(entity, id);
+            ColumnBuilder<T>.TryToSetIdentityProperty(entity, id);
 
             return entity;
         }
@@ -265,21 +297,49 @@ namespace ElementSql
         public void Update(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            parts.Connection.Update(entity, parts.Transaction, commandTimeout);
+            parts.Connection.Execute(ColumnBuilder<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
         /// Delete entity in table "Ts".
         /// </summary>
-        /// <typeparam name="T">Type of entity</typeparam>
-        /// <param name="entity">Entity to delete</param>
+        /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        /// <returns>true if deleted, false if not found</returns>
-        public bool Delete(T entity, IConnectionContext context, int? commandTimeout = null)
+        public void Delete(int key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            return parts.Connection.Delete(entity, parts.Transaction, commandTimeout);
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
+        }
+
+        /// <summary>
+        /// Delete entity in table "Ts".
+        /// </summary>
+        /// <param name="key">key to delete</param>
+        /// <param name="context">The connection context from Storage Manager</param>
+        /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
+        public void Delete(long key, IConnectionContext context, int? commandTimeout = null)
+        {
+            var parts = context.GetConnectionParts();
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
+        }
+
+        /// <summary>
+        /// Delete entity in table "Ts".
+        /// </summary>
+        /// <param name="key">key to delete</param>
+        /// <param name="context">The connection context from Storage Manager</param>
+        /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
+        public void Delete(Guid key, IConnectionContext context, int? commandTimeout = null)
+        {
+            var parts = context.GetConnectionParts();
+            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+
+            parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -414,80 +474,13 @@ namespace ElementSql
             return parts.Connection.ExecuteReader(query, param, parts.Transaction, commandTimeout, commandType);
         }
 
-        private static readonly ConcurrentDictionary<Type, string> _tableNames = new();
-        private static readonly ConcurrentDictionary<Type, string> _identities = new();
-
         private static string BuildQuery(string filter)
         {
             var query = $@"
-                SELECT {RepositoryBase<T>.GetColumns()}
-                FROM {RepositoryBase<T>.GetTable()}
+                SELECT {ColumnBuilder<T>.GetColumns()}
+                FROM {ColumnBuilder<T>.GetTableName()}
                 {filter}";
             return query;
-        }
-
-        private static string GetColumns()
-        {
-            return ColumnBuilder<T>.GetColumns();
-        }
-
-        private static string GetTable()
-        {
-            var type = typeof(T);
-
-            if (_tableNames.TryGetValue(type, out var tableName))
-            {
-                return tableName;
-
-            } else
-            {
-                var attributes = type.GetCustomAttributes(false);
-                foreach (var attribute in attributes)
-                {
-                    if (attribute is TableAttribute tableAttribute)
-                    {
-                        _tableNames.TryAdd(type, tableAttribute.Name);
-                        return tableAttribute.Name;
-                    }
-                }
-            }
-
-            throw new Exception("Table attribute is not set on entity.");
-        }
-
-        private static void TryToSetIdentityProperty(T entity, dynamic id)
-        {
-            var type = entity!.GetType();
-
-            PropertyInfo? idProperty;
-            if (_identities.TryGetValue(type, out var identityName))
-            {
-                idProperty = type.GetProperty(identityName);
-                idProperty?.SetValue(entity, id);
-            }
-
-            idProperty = type.GetProperty("Id");
-            if (idProperty?.PropertyType == typeof(int) || idProperty?.PropertyType == typeof(long))
-            {
-                _identities.TryAdd(type, idProperty.Name);
-                idProperty.SetValue(entity, id);
-            }
-            else
-            {
-                var properties = type.GetProperties();
-                foreach (var property in properties)
-                {
-                    var attributes = property.GetCustomAttributes(true);
-                    foreach (var attribute in attributes)
-                    {
-                        if (attribute is KeyAttribute)
-                        {
-                            _identities.TryAdd(type, property.Name);
-                            property.SetValue(entity, id);
-                        }
-                    }
-                }
-            }
         }
     }
 }
