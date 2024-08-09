@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using ElementSql.Cache;
 using ElementSql.Interfaces;
 using System.Data;
 
@@ -53,9 +54,9 @@ namespace ElementSql
         public async Task<T> InsertAsync(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var id = await parts.Connection.ExecuteAsync(ColumnBuilder<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
+            var id = await parts.Connection.ExecuteAsync(CacheTableHelper<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
 
-            ColumnBuilder<T>.TryToSetIdentityProperty(entity, id);
+            CacheTableHelper<T>.TryToSetIdentityProperty(entity, id);
 
             return entity;
         }
@@ -71,7 +72,7 @@ namespace ElementSql
         public async Task UpdateAsync(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            await parts.Connection.ExecuteAsync(ColumnBuilder<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
+            await parts.Connection.ExecuteAsync(CacheTableHelper<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace ElementSql
         public async Task DeleteAsync(int key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -97,7 +98,7 @@ namespace ElementSql
         public async Task DeleteAsync(long key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -111,7 +112,7 @@ namespace ElementSql
         public async Task DeleteAsync(Guid key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             await parts.Connection.ExecuteAsync(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -279,9 +280,9 @@ namespace ElementSql
         public T Insert(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var id = parts.Connection.Execute(ColumnBuilder<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
+            var id = parts.Connection.Execute(CacheTableHelper<T>.GetInsertStatement(), entity, parts.Transaction, commandTimeout);
 
-            ColumnBuilder<T>.TryToSetIdentityProperty(entity, id);
+            CacheTableHelper<T>.TryToSetIdentityProperty(entity, id);
 
             return entity;
         }
@@ -297,7 +298,7 @@ namespace ElementSql
         public void Update(T entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            parts.Connection.Execute(ColumnBuilder<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
+            parts.Connection.Execute(CacheTableHelper<T>.GetUpdateStatement(), entity, parts.Transaction, commandTimeout);
         }
 
         /// <summary>
@@ -309,7 +310,7 @@ namespace ElementSql
         public void Delete(int key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -323,7 +324,7 @@ namespace ElementSql
         public void Delete(long key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -337,7 +338,7 @@ namespace ElementSql
         public void Delete(Guid key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
-            var command = $"DELETE FROM {ColumnBuilder<T>.GetTableName()} WHERE {ColumnBuilder<T>.GetTableKeyColumn()} = @Key";
+            var command = $"DELETE FROM {CacheTableHelper<T>.GetTableName()} WHERE {CacheTableHelper<T>.GetTableKeyColumn()} = @Key";
 
             parts.Connection.Execute(command, new { key }, parts.Transaction, commandTimeout);
         }
@@ -477,8 +478,8 @@ namespace ElementSql
         private static string BuildQuery(string filter)
         {
             var query = $@"
-                SELECT {ColumnBuilder<T>.GetColumns()}
-                FROM {ColumnBuilder<T>.GetTableName()}
+                SELECT {CacheTableHelper<T>.GetColumns()}
+                FROM {CacheTableHelper<T>.GetTableName()}
                 {filter}";
             return query;
         }

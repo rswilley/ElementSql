@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElementSql.Example", "Eleme
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ElementSql.MySqlTests", "ElementSql.MySqlTests\ElementSql.MySqlTests.csproj", "{3799F0BF-2EAC-441D-9A38-1AA561F67E88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElementSql.Tests", "ElementSql.Tests\ElementSql.Tests.csproj", "{3D8B63D6-6481-46A4-AE43-646A9B935060}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3799F0BF-2EAC-441D-9A38-1AA561F67E88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3799F0BF-2EAC-441D-9A38-1AA561F67E88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3799F0BF-2EAC-441D-9A38-1AA561F67E88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D8B63D6-6481-46A4-AE43-646A9B935060}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D8B63D6-6481-46A4-AE43-646A9B935060}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D8B63D6-6481-46A4-AE43-646A9B935060}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D8B63D6-6481-46A4-AE43-646A9B935060}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

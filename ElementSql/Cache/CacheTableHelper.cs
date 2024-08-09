@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using ElementSql.Attributes;
 
-namespace ElementSql
+namespace ElementSql.Cache
 {
-    internal class ColumnBuilder<T>
+    internal class CacheTableHelper<T>
     {
         public static string? GetTableKeyColumn()
         {
@@ -40,7 +40,7 @@ namespace ElementSql
         public static string GetTableName()
         {
             var type = typeof(T);
-            
+
             if (_cachedTables.TryGetValue(type, out var cachedTable))
             {
                 if (!string.IsNullOrEmpty(cachedTable.TableName))
@@ -87,7 +87,8 @@ namespace ElementSql
                 {
                     key = cachedTable.KeyColumn;
                 }
-            } else
+            }
+            else
             {
                 key = SetCachedTable().KeyColumn;
             }
@@ -98,6 +99,8 @@ namespace ElementSql
             PropertyInfo? idProperty = type.GetProperty(key);
             idProperty?.SetValue(entity, id);
         }
+
+        private static readonly ConcurrentDictionary<Type, CachedTable> _cachedTables = new();
 
         private static CachedTable SetCachedTable()
         {
@@ -117,11 +120,11 @@ namespace ElementSql
 
             if (string.IsNullOrEmpty(tableName))
             {
-                throw new Exception("Table attribute is not set on entity.");
+                throw new Exception($"Table attribute is not set on entity: {type.Name}");
             }
             if (!columns.Any())
             {
-                throw new Exception("Entity has no columns.");
+                throw new Exception($"No columns found on entity: {type.Name}");
             }
 
             var insertStatement = BuildInsertStatement(tableName, columns);
@@ -132,8 +135,8 @@ namespace ElementSql
                 TableName = tableName,
                 Columns = columns,
                 KeyColumn = columns.SingleOrDefault(c => c.IsKey)?.Name,
-                ConcatenatedColumns = string.Join(',', columns),
-                InsertStatement = insertStatement,
+                ConcatenatedColumns = insertStatement.allConcatenatedColumns,
+                InsertStatement = insertStatement.insertStatement,
                 UpdateStatement = updateStatement
             };
             _cachedTables.TryAdd(type, cachedTable);
@@ -141,26 +144,30 @@ namespace ElementSql
             return cachedTable;
         }
 
-        private static string BuildInsertStatement(string tableName, IEnumerable<CachedColumn> columns)
+        private static (string allConcatenatedColumns, string insertStatement) BuildInsertStatement(string tableName, IEnumerable<CachedColumn> columns)
         {
-            var columnConcatenated = string.Empty;
+            var allConcatenatedColumns = string.Empty;
+            var concatenatedColumns = string.Empty;
             var valuesConcatenated = string.Empty;
 
             foreach (var column in columns)
             {
+                allConcatenatedColumns += $"{column.Name},";
+
                 if (column.IsKey)
                 {
                     continue;
                 }
 
-                columnConcatenated += $"{column.Name},";
+                concatenatedColumns += $"{column.Name},";
                 valuesConcatenated += $"@{column.Name},";
             }
 
-            columnConcatenated = columnConcatenated.TrimEnd(',');
+            allConcatenatedColumns = allConcatenatedColumns.TrimEnd(',');
+            concatenatedColumns = concatenatedColumns.TrimEnd(',');
             valuesConcatenated = valuesConcatenated.TrimEnd(',');
 
-            return $"INSERT INTO {tableName} ({columnConcatenated}) VALUES ({valuesConcatenated});";
+            return (allConcatenatedColumns, $"INSERT INTO {tableName} ({concatenatedColumns}) VALUES ({valuesConcatenated});");
         }
 
         private static string BuildUpdateStatement(string tableName, IEnumerable<CachedColumn> columns)
@@ -173,14 +180,15 @@ namespace ElementSql
                 if (column.IsKey)
                 {
                     keyColumn = column.Name;
+                } else
+                {
+                    valuesConcatenated += $"{column.Name}=@{column.Name},";
                 }
-
-                valuesConcatenated += $"{column.Name}=@{column.Name}";
             }
 
             valuesConcatenated = valuesConcatenated.TrimEnd(',');
 
-            return $"UPDATE {tableName} SET ({valuesConcatenated}) WHERE {keyColumn} = @Key;";
+            return $"UPDATE {tableName} SET {valuesConcatenated} WHERE {keyColumn}=@Key;";
         }
 
         private static IEnumerable<CachedColumn> GetColumnsFromEntity()
@@ -214,8 +222,6 @@ namespace ElementSql
             return columns;
         }
 
-        private static readonly ConcurrentDictionary<Type, CachedTable> _cachedTables = new();
-
         private static string GetColumnName(PropertyInfo property)
         {
             var attrs = property.GetCustomAttributes();
@@ -230,20 +236,4 @@ namespace ElementSql
             return property.Name;
         }
     }
-}
-
-internal class CachedTable
-{
-    public string TableName { get; set; } = string.Empty;
-    public IEnumerable<CachedColumn> Columns { get; set; } = Enumerable.Empty<CachedColumn>();
-    public string? KeyColumn { get; set; }
-    public string ConcatenatedColumns { get; set; } = string.Empty;
-    public string InsertStatement { get; set; } = string.Empty;
-    public string UpdateStatement { get; set; } = string.Empty;
-}
-
-internal class CachedColumn
-{
-    public bool IsKey { get; set; }
-    public string Name { get; set; } = string.Empty;
 }

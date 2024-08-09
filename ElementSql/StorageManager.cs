@@ -1,6 +1,8 @@
 ﻿using ElementSql.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ElementSql.Tests")]
 namespace ElementSql
 {
     internal class StorageManager : IStorageManager
