@@ -1,4 +1,5 @@
-﻿using ElementSql.Interfaces;
+﻿using ElementSql.Cache;
+using ElementSql.Interfaces;
 
 namespace ElementSql
 {
@@ -6,7 +7,7 @@ namespace ElementSql
     {
         public static ConnectionParts GetConnectionParts(this IConnectionContext context)
         {
-            return context switch
+            var parts = context switch
             {
                 IUnitOfWorkContext unitOfWorkContext => new ConnectionParts
                 {
@@ -20,6 +21,9 @@ namespace ElementSql
                 },
                 _ => throw new NotSupportedException()
             };
+            
+            CacheTableHelper.Initialize(parts.Connection);
+            return parts;
         }
     }
 }

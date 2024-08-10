@@ -1,0 +1,21 @@
+﻿name: local
+services:
+  flyway:
+    image: flyway/flyway
+    command: -configFiles=/flyway/config/flyway.config migrate
+    volumes:
+      - ${PWD}/sql:/flyway/sql
+      - ${PWD}/config/flyway.conf:/flyway/config/flyway.conf
+    env_file:
+      - local.env
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    restart: always
+    ports:
+      - '3306:3306'
+    env_file:
+      - local.env

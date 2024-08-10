@@ -1,11 +1,13 @@
 ﻿using Dapper.Contrib.Extensions;
+using ElementSql.Interfaces;
 
 namespace ElementSql.Example.Data.PersonRepository
 {
     [Table(TableConstants.Person)]
-    public class Person
+    public class Person : EntityBase<long>
     {
-        public int Id { get; set;}
+        [Key]
+        public override long Id { get; set; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string EmailAddress { get; set; } = null!;

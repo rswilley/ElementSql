@@ -1,4 +1,5 @@
-﻿using ElementSql.Attributes;
+﻿using System.ComponentModel.DataAnnotations;
+using ElementSql.Attributes;
 using ElementSql.Interfaces;
 
 namespace ElementSql.MySqlTests
@@ -8,7 +9,7 @@ namespace ElementSql.MySqlTests
         Task<Element?> GetByName(string name, IConnectionContext context);
     }
 
-    public class ElementRepository : RepositoryBase<Element>, IElementRepository
+    public class ElementRepository : RepositoryBase<Element, int>, IElementRepository
     {
         public async Task<Element?> GetByName(string name, IConnectionContext context)
         {
@@ -17,9 +18,10 @@ namespace ElementSql.MySqlTests
     }
 
     [Table("elements")]
-    public class Element
+    public class Element : EntityBase<int>
     {
-        public int Id { get; set; }
+        [Key]
+        public override int Id { get; set; }
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;
     }
