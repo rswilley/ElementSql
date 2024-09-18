@@ -1,14 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>ElementSql</Title>
+    <Authors>Robert Swilley</Authors>
+    <Description>ElementSql is a lightweight abstraction around Dapper that implements the repository pattern and makes working with database connections and transactions easier.
+
+It works with any database that Dapper supports.</Description>
+    <PackageProjectUrl>https://github.com/rswilley/ElementSql</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/rswilley/ElementSql?tab=MIT-1-ov-file</PackageLicenseUrl>
+    <PackageTags>orm, sql, micro-orm, dapper, transaction, unit of work</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.15" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.35" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
   </ItemGroup>
 
 </Project>

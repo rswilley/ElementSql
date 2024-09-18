@@ -1,4 +1,5 @@
-﻿using Dapper.Contrib.Extensions;
+﻿using System.ComponentModel.DataAnnotations;
+using ElementSql.Attributes;
 using ElementSql.Interfaces;
 
 namespace ElementSql.Example.Data.PersonRepository
