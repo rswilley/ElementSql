@@ -63,18 +63,56 @@ namespace ElementSql
         }
 
         /// <summary>
-        /// Updates entity in table "Ts" asynchronously using Task, checks if the entity is modified if the entity is tracked by the Get() extension.
+        /// Updates entity in table "Ts" asynchronously using Task
         /// </summary>
         /// <typeparam name="TEntity">Type to be updated</typeparam>
         /// <param name="entity">Entity to be updated</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        /// <returns>true if updated, false if not found or not modified (tracked entities)</returns>
         public async Task UpdateAsync(TEntity entity, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
             var updateCommand = CacheTableHelper.GetUpdateStatement<TEntity>();
             await parts.Connection.ExecuteAsync(updateCommand, entity, parts.Transaction, commandTimeout);
+        }
+        
+        /// <summary>
+        /// Either inserts or updates entity in table "Ts" asynchronously using Task
+        /// </summary>
+        /// <typeparam name="TEntity">Type to be upserted</typeparam>
+        /// <param name="entity">Entity to be upserted</param>
+        /// <param name="context">The connection context from Storage Manager</param>
+        /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
+        public async Task UpsertAsync(TEntity entity, IConnectionContext context, int? commandTimeout = null)
+        {
+            var shouldInsert = false;
+            switch (entity.Id)
+            {
+                case long or int:
+                {
+                    var id = Convert.ToInt64(entity.Id);
+                    if (id == default)
+                        shouldInsert = true;
+                    break;
+                }
+                case Guid id:
+                {
+                    if (id == Guid.Empty)
+                        shouldInsert = true;
+                    break;
+                }
+                default:
+                    throw new Exception("Column Id must be an int, long or Guid type");
+            }
+
+            if (shouldInsert)
+            {
+                await InsertAsync(entity, context, commandTimeout);
+            }
+            else
+            {
+                await UpdateAsync(entity, context, commandTimeout);
+            }
         }
 
         /// <summary>
