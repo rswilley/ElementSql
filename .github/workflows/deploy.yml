@@ -1,0 +1,23 @@
+name: Main Deploy
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  publish_nuget:
+    name: Build and Run Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+      
+    - name: .NET Build Core
+      run: dotnet build ElementSql/ElementSql.csproj -c Release /p:CI=true
+      
+    - name: Pack the project
+      run: dotnet pack ElementSql/ElementSql.csproj --configuration Release --no-build --output ./nupkg
+
+    - name: Push the package to NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
