@@ -22,7 +22,7 @@ defaults:
 
 jobs:
   vm-job:
-    name: Ubuntu
+    name: Build and Run Tests
     runs-on: ubuntu-latest
     services:
       mysql:
