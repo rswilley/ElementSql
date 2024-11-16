@@ -8,9 +8,6 @@ on:
   pull_request:
     branches:
       - '*'
-  release:
-    types:
-      - published
 
 jobs:
   vm-job:
@@ -44,9 +41,3 @@ jobs:
       run: dotnet test ElementSql.MySqlTests/ElementSql.MySqlTests.csproj -c Release -l "console;verbosity=normal" /p:CI=true
       env:
         MySqlConnectionString: Server=localhost;Port=${{ job.services.mysql.ports[3306] }};Uid=root;Pwd=root;Database=test;Allow User Variables=true
-        
-    - name: Pack the project
-      run: dotnet pack ElementSql/ElementSql.csproj --configuration Release --no-build --output ./nupkg
-
-    - name: Push the package to NuGet
-      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
