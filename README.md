@@ -104,7 +104,9 @@ public class MyStorageManager : StorageManager, IMyStorageManager
 }
 ```
 
-### Register your ```StorageManager```, repositories/queries, and setup your database. The following is a MySql example, but ElementSql will work with Sql Server, Postgres, Sqlite, etc (any database that implements ```IDbConnection```).
+### Setup your database and DI
+
+The following is a MySql example, but ElementSql will work with Sql Server, Postgres, Sqlite, etc (any database that implements ```IDbConnection```).
 
 ```csharp
 //Program.cs
@@ -125,6 +127,7 @@ builder.Services.AddElementSql(config =>
 //Setting WasSuccessful to true will Commit the transaction when Dispose is called.
 using var transaction = await _storageManager.StartUnitOfWorkAsync();
 _ = await _storageManager.DbContext.ElementRepository.Add(new Element { Name = "Selenium" }, transaction);
+//write to other tables using transaction
 transaction.WasSuccessful = true; //Commits the transaction when Dispose is called
 ```
 
