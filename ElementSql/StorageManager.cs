@@ -3,9 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ElementSql.Tests")]
+
 namespace ElementSql
 {
-    internal class StorageManager : IStorageManager
+    public class StorageManager : IStorageManager
     {
         public StorageManager(
             IServiceProvider serviceProvider)
