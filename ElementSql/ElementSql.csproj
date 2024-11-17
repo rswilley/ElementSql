@@ -13,7 +13,7 @@ It works with any database that Dapper supports.</Description>
     <PackageLicenseUrl>https://github.com/rswilley/ElementSql?tab=MIT-1-ov-file</PackageLicenseUrl>
     <PackageTags>orm, sql, micro-orm, dapper, transaction, unit of work</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
 	<IsPackable>true</IsPackable>
   </PropertyGroup>
 

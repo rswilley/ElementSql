@@ -8,7 +8,7 @@
         {
             using var session = await StorageManager.StartSessionAsync();
 
-            var result = await StorageManager.GetQuery<ITestQuery>().GetCurrentTime(session);
+            var result = await StorageManager.DbContext.TestQuery.GetCurrentTime(session);
 
             Assert.That(result, Is.Not.EqualTo(DateTime.MinValue));
         }

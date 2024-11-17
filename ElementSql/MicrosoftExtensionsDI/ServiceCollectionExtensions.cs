@@ -36,8 +36,6 @@ public static class ServiceCollectionExtensions
             });
         }
 
-        services.AddTransient<IStorageManager, StorageManager>();
-
         if (configuration.Registration != null && 
             configuration.Registration.Autoregister && 
             configuration.Registration.AssemblyLocation != null)

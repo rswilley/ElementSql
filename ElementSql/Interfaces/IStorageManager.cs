@@ -10,7 +10,5 @@ namespace ElementSql.Interfaces
         Task<IConnectionContext> StartUnitOfWorkAsync(string databaseName = "");
         IConnectionContext StartSession(string databaseName = "");
         IConnectionContext StartUnitOfWork(string databaseName = "");
-        TRepository GetRepository<TRepository>() where TRepository : IElementSqlRepository;
-        TQuery GetQuery<TQuery>() where TQuery : IElementSqlQuery;
     }
 }

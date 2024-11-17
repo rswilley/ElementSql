@@ -13,7 +13,7 @@ namespace ElementSql.MySqlTests
         }
 
         protected IServiceProvider ServiceProvider { get; private set; } = null!;
-        protected IStorageManager StorageManager { get; private set; } = null!;
+        protected IMyStorageManager StorageManager { get; private set; } = null!;
         protected IElementRepository ElementRepository { get; private set; } = null!;
 
         protected async Task<Element> ShouldCreateRecord(Element toInsert, IConnectionContext context)
@@ -53,6 +53,7 @@ namespace ElementSql.MySqlTests
             var serviceCollection = new ServiceCollection();
 
             var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
+            serviceCollection.AddSingleton<IMyStorageManager, MyStorageManager>();
             serviceCollection.AddElementSql(config =>
             {
                 config.Databases.Add("Default", () => new MySqlConnection(connectionString));
@@ -70,8 +71,8 @@ namespace ElementSql.MySqlTests
         private void SeedTestDatabase()
         {
             // Populate test data
-            StorageManager = ServiceProvider.GetRequiredService<IStorageManager>();
-            ElementRepository = StorageManager.GetRepository<IElementRepository>();
+            StorageManager = ServiceProvider.GetRequiredService<IMyStorageManager>();
+            ElementRepository = StorageManager.DbContext.ElementRepository;
 
             using var tx = StorageManager.StartUnitOfWork();
             var seeder = new SeedDatabase();

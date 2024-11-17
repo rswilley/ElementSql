@@ -1,3 +1,4 @@
+using ElementSql.Example.Data;
 using MySql.Data.MySqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
+builder.Services.AddScoped<IMyStorageManager, MyStorageManager>();
 builder.Services.AddElementSql(config =>
 {
     config.Databases.Add("Default", () => new MySqlConnection(connectionString));
