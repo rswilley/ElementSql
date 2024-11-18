@@ -13,7 +13,7 @@ namespace ElementSql.MySqlTests
     {
         public async Task<Element?> GetByName(string name, IConnectionContext context)
         {
-            return await QueryFirstOrDefaultAsync($"WHERE {nameof(Element.Name)} = @Name", new { name }, context);
+            return await QuerySingleOrDefaultAsync($"WHERE {nameof(Element.Name)} = @Name", new { name }, context);
         }
     }
 
