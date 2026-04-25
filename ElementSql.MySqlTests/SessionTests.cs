@@ -21,12 +21,12 @@
                     Symbol = "Au"
                 }, session);
                 
-                Assert.That(record2.Id, Is.EqualTo(2));
+                Assert.That(record2.Id, Is.EqualTo(120));
             }
 
             Assert.Multiple(() =>
             {
-                Assert.That(record.Id, Is.EqualTo(1));
+                Assert.That(record.Id, Is.EqualTo(119));
                 Assert.That(record.Name, Is.EqualTo("Gold"));
                 Assert.That(record.Symbol, Is.EqualTo("Au"));
             });
