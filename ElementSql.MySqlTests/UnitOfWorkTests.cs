@@ -23,6 +23,7 @@ namespace ElementSql.MySqlTests
                 Assert.That(record.Id, Is.Not.EqualTo(0));
                 Assert.That(record.Name, Is.EqualTo("Gold"));
                 Assert.That(record.Symbol, Is.EqualTo("Au"));
+                
             });
 
             await VerifyCommit(record.Id);
@@ -89,7 +90,7 @@ namespace ElementSql.MySqlTests
             Assert.That(deletedRecord, Is.Null);
         }
 
-        private async Task VerifyCommit(int id)
+        private async Task VerifyCommit(ulong id)
         {
             using var session = await StorageManager.StartSessionAsync();
             var commit = await ElementRepository.GetByIdAsync(id, session);

@@ -55,9 +55,9 @@ namespace ElementSql
         {
             var parts = context.GetConnectionParts();
             var insertCommand = CacheTableHelper.GetInsertStatement<TEntity>();
-            var id = await parts.Connection.ExecuteAsync(insertCommand, entity, parts.Transaction, commandTimeout);
+            var id = await parts.Connection.ExecuteScalarAsync(insertCommand, entity, parts.Transaction, commandTimeout);
 
-            CacheTableHelper.TryToSetIdentityProperty(entity, id);
+            CacheTableHelper.TryToSetIdentityProperty(entity, id!);
 
             return entity;
         }
@@ -121,7 +121,7 @@ namespace ElementSql
         /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        public async Task DeleteAsync(int key, IConnectionContext context, int? commandTimeout = null)
+        public async Task DeleteAsync(uint key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
             var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -135,7 +135,7 @@ namespace ElementSql
         /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        public async Task DeleteAsync(long key, IConnectionContext context, int? commandTimeout = null)
+        public async Task DeleteAsync(ulong key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
             var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -321,9 +321,9 @@ namespace ElementSql
         {
             var parts = context.GetConnectionParts();
             var insertCommand = CacheTableHelper.GetInsertStatement<TEntity>();
-            var id = parts.Connection.Execute(insertCommand, entity, parts.Transaction, commandTimeout);
+            var id = parts.Connection.ExecuteScalar(insertCommand, entity, parts.Transaction, commandTimeout);
 
-            CacheTableHelper.TryToSetIdentityProperty(entity, id);
+            CacheTableHelper.TryToSetIdentityProperty(entity, id!);
 
             return entity;
         }
@@ -348,7 +348,7 @@ namespace ElementSql
         /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        public void Delete(int key, IConnectionContext context, int? commandTimeout = null)
+        public void Delete(uint key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
             var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -362,7 +362,7 @@ namespace ElementSql
         /// <param name="key">key to delete</param>
         /// <param name="context">The connection context from Storage Manager</param>
         /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-        public void Delete(long key, IConnectionContext context, int? commandTimeout = null)
+        public void Delete(ulong key, IConnectionContext context, int? commandTimeout = null)
         {
             var parts = context.GetConnectionParts();
             var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";

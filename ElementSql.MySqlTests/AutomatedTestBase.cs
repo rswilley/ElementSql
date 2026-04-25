@@ -1,14 +1,16 @@
 ﻿using ElementSql.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
+using Testcontainers.MySql;
 
 namespace ElementSql.MySqlTests
 {
-    public abstract class AutomatedTestBase
+    public abstract class AutomatedTestBase : IAsyncDisposable
     {
         protected AutomatedTestBase()
         {
-            Bootstrap();
+            var connectionString = InitializeDatabase().Result;
+            BootstrapDependencies(connectionString);
             SeedTestDatabase();
         }
 
@@ -47,12 +49,31 @@ namespace ElementSql.MySqlTests
             var deleted = await ElementRepository.GetByIdAsync(recordToDelete.Id, context);
             return deleted;
         }
+        
+        private async Task<string> InitializeDatabase()
+        {
+            // Create a MySQL container configuration
+            _mySqlContainer = new MySqlBuilder()
+                .WithDatabase("TestDb")
+                .WithUsername("testuser")
+                .WithPassword("testpass")
+                .WithImage("mysql:8.0")
+                .Build();
 
-        private void Bootstrap()
+            await _mySqlContainer.StartAsync();
+                
+            Console.WriteLine("MySQL container started.");
+            Console.WriteLine($"Connection string: {_mySqlContainer.GetConnectionString()}");
+            
+            return _mySqlContainer.GetConnectionString();
+        }
+        
+        private MySqlContainer? _mySqlContainer;
+
+        private void BootstrapDependencies(string connectionString)
         {
             var serviceCollection = new ServiceCollection();
-
-            var connectionString = Environment.GetEnvironmentVariable("MySqlConnectionString")!;
+            
             serviceCollection.AddSingleton<IMyStorageManager, MyStorageManager>();
             serviceCollection.AddElementSql(config =>
             {
@@ -81,6 +102,12 @@ namespace ElementSql.MySqlTests
 
             // Commit transaction
             tx.WasSuccessful = true;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _mySqlContainer!.DisposeAsync();
+            Console.WriteLine("MySQL container stopped.");
         }
     }
 }

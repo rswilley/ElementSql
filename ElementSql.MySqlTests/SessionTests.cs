@@ -4,7 +4,7 @@
     public class SessionTests : AutomatedTestBase
     {
         [Test, Order(1)]
-        public async Task ShouldAddRecord()
+        public async Task ShouldAddRecords()
         {
             Element record;
             using (var session = await StorageManager.StartSessionAsync())
@@ -14,11 +14,19 @@
                     Name = "Gold",
                     Symbol = "Au"
                 }, session);
+                
+                var record2 = await ShouldCreateRecord(new Element
+                {
+                    Name = "Gold",
+                    Symbol = "Au"
+                }, session);
+                
+                Assert.That(record2.Id, Is.EqualTo(2));
             }
 
             Assert.Multiple(() =>
             {
-                Assert.That(record.Id, Is.Not.EqualTo(0));
+                Assert.That(record.Id, Is.EqualTo(1));
                 Assert.That(record.Name, Is.EqualTo("Gold"));
                 Assert.That(record.Symbol, Is.EqualTo("Au"));
             });

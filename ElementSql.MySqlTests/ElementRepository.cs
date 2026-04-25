@@ -9,7 +9,7 @@ namespace ElementSql.MySqlTests
         Task<Element?> GetByName(string name, IConnectionContext context);
     }
 
-    public class ElementRepository : RepositoryBase<Element, int>, IElementRepository
+    public class ElementRepository : RepositoryBase<Element, ulong>, IElementRepository
     {
         public async Task<Element?> GetByName(string name, IConnectionContext context)
         {
@@ -18,10 +18,10 @@ namespace ElementSql.MySqlTests
     }
 
     [Table("elements")]
-    public class Element : EntityBase<int>
+    public class Element : EntityBase<ulong>
     {
         [Key]
-        public override int Id { get; set; }
+        public override ulong Id { get; set; }
         public string Name { get; set; } = null!;
         public string Symbol { get; set; } = null!;
     }
