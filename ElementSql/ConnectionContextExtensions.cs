@@ -3,9 +3,9 @@ using ElementSql.Interfaces;
 
 namespace ElementSql
 {
-    public static class ConnectionContextExtensions
+    internal static class ConnectionContextExtensions
     {
-        public static ConnectionParts GetConnectionParts(this IConnectionContext context)
+        internal static ConnectionParts GetConnectionParts(this IConnectionContext context)
         {
             var parts = context switch
             {
@@ -21,7 +21,7 @@ namespace ElementSql
                 },
                 _ => throw new NotSupportedException()
             };
-            
+
             CacheTableHelper.Initialize(parts.Connection);
             return parts;
         }
