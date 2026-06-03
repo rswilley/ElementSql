@@ -102,7 +102,7 @@ public class SimpleQueryExtensionsTests
 }
 
 [Table("elements")]
-internal record SimpleElement : EntityRecordBase<ulong>
+internal record SimpleElement : EntityBase<ulong>
 {
     [Key]
     public override ulong Id { get; init; }

@@ -6,73 +6,39 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddElementSql(this IServiceCollection services, Action<ElementSqlConfiguration> configuration)
+    extension(IServiceCollection services)
     {
-        var serviceConfig = new ElementSqlConfiguration();
-
-        configuration.Invoke(serviceConfig);
-
-        return services.AddElementSql(serviceConfig);
-    }
-
-    public static IServiceCollection AddElementSql(this IServiceCollection services, ElementSqlConfiguration configuration)
-    {
-        if (!configuration.Databases.Any())
+        public IServiceCollection AddElementSql(Action<ElementSqlConfiguration> configuration)
         {
-            throw new ArgumentNullException("No Databases setup.");
-        }
-        
-        foreach (var database in configuration.Databases)
-        {
-            if (database.Value == null)
-            {
-                throw new ArgumentNullException($"No DbConnection provided for database {database.Key}.");
-            }
+            var serviceConfig = new ElementSqlConfiguration();
 
-            services.AddTransient<ISqlDatabase>(sp => new SqlDatabase
-            {
-                Name = database.Key,
-                DbConnection = database.Value
-            });
+            configuration.Invoke(serviceConfig);
+
+            return services.AddElementSql(serviceConfig);
         }
 
-        if (configuration.Registration != null && 
-            configuration.Registration.Autoregister && 
-            configuration.Registration.AssemblyLocation != null)
+        private IServiceCollection AddElementSql(ElementSqlConfiguration configuration)
         {
-            var assembly = Assembly.GetAssembly(configuration.Registration.AssemblyLocation);
-            if (assembly != null)
+            if (configuration.Databases.Count == 0)
             {
-                AutoRegister(services, assembly, "Repository", nameof(IElementSqlRepository), configuration.Registration.ServiceLifetime);
-                AutoRegister(services, assembly, "Query", nameof(IElementSqlQuery), configuration.Registration.ServiceLifetime);
-            } else
-            {
-                throw new ArgumentNullException("Repository registration assembly not found.");
-            }
-        }
-
-        return services;
-    }
-
-    private static void AutoRegister(IServiceCollection services, Assembly assembly, string classNameEndsWith, string interfaceName, ServiceLifetime serviceLifetime)
-    {
-        var toRegister = assembly.DefinedTypes
-                    .Where(t => t.IsClass && t.Name.EndsWith(classNameEndsWith))
-                    .SelectMany(t => t.GetInterfaces(), (c, i) => new { Class = c, Interface = i })
-                    .ToList();
-
-        foreach (var item in toRegister)
-        {
-            var elementSqlRepository = toRegister.SingleOrDefault(r => r.Class.Name == item.Class.Name && r.Interface.Name == interfaceName);
-            if (elementSqlRepository == null)
-            {
-                continue;
+                throw new ArgumentNullException("No Databases setup.");
             }
 
-            if ("I" + item.Class.Name == item.Interface.Name)
+            foreach (var database in configuration.Databases)
             {
-                services.Add(new ServiceDescriptor(item.Interface, item.Class, serviceLifetime));
+                if (database.Value == null)
+                {
+                    throw new ArgumentNullException($"No DbConnection provided for database {database.Key}.");
+                }
+
+                services.AddTransient<ISqlDatabase>(sp => new SqlDatabase
+                {
+                    Name = database.Key,
+                    DbConnection = database.Value
+                });
             }
+
+            return services;
         }
     }
 }

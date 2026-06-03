@@ -1,4 +1,5 @@
-using ElementSql.Example.Data;
+using ElementSql;
+using ElementSql.Interfaces;
 using MySql.Data.MySqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,16 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
-builder.Services.AddScoped<IMyStorageManager, MyStorageManager>();
+builder.Services.AddScoped<IStorageManager, StorageManager>();
 builder.Services.AddElementSql(config =>
 {
     config.Databases.Add("Default", () => new MySqlConnection(connectionString));
     config.Databases.Add("Default2", () => new MySqlConnection(connectionString));
-    config.Registration = new ElementSqlRegistration { 
-        Autoregister = true,
-        AssemblyLocation = typeof(Program),
-        ServiceLifetime = ServiceLifetime.Singleton
-    };
 });
 
 // Configure the HTTP request pipeline.

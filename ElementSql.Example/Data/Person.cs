@@ -2,13 +2,13 @@
 using ElementSql.Attributes;
 using ElementSql.Interfaces;
 
-namespace ElementSql.Example.Data.PersonRepository
+namespace ElementSql.Example.Data
 {
     [Table(TableConstants.Person)]
-    public class Person : EntityBase<long>
+    public record Person : EntityBase<ulong>
     {
         [Key]
-        public override long Id { get; set; }
+        public override ulong Id { get; init; }
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
         public string EmailAddress { get; set; } = null!;

@@ -51,7 +51,7 @@ public class V1Tests : AutomatedTestBase
 }
 
 [Table("elements")]
-public record ElementV1 : EntityRecordBase<ulong>
+public record ElementV1 : EntityBase<ulong>
 {
     [Key]
     public override ulong Id { get; init; }

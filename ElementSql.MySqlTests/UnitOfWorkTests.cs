@@ -1,3 +1,5 @@
+using ElementSql;
+
 namespace ElementSql.MySqlTests
 {
     [TestFixture]
@@ -9,11 +11,11 @@ namespace ElementSql.MySqlTests
             Element record;
             using (var tx = await StorageManager.StartUnitOfWorkAsync())
             {
-                record = await ShouldCreateRecord(new Element
+                record = await tx.InsertAsync(new Element
                 {
                     Name = "Gold",
                     Symbol = "Au"
-                }, tx);
+                });
 
                 tx.WasSuccessful = true;
             }
@@ -23,7 +25,6 @@ namespace ElementSql.MySqlTests
                 Assert.That(record.Id, Is.Not.EqualTo(0));
                 Assert.That(record.Name, Is.EqualTo("Gold"));
                 Assert.That(record.Symbol, Is.EqualTo("Au"));
-                
             });
 
             await VerifyCommit(record.Id);
@@ -35,7 +36,7 @@ namespace ElementSql.MySqlTests
             Element record;
             using (var tx = await StorageManager.StartUnitOfWorkAsync())
             {
-                record = await ShouldReadRecord(1, tx);
+                record = (await tx.GetByIdAsync<Element>(1UL))!;
 
                 Assert.Multiple(() =>
                 {
@@ -44,14 +45,19 @@ namespace ElementSql.MySqlTests
                     Assert.That(record.Symbol, Is.EqualTo("H"));
                 });
 
-                // Update
-                record.Name = "Fake";
-                record.Symbol = "F";
-                var updatedRecord = await ShouldUpdateRecord(record, tx);
+                var toUpdate = record with
+                {
+                    Name = "Fake",
+                    Symbol = "F"
+                };
+
+                await tx.UpdateAsync(toUpdate);
+                var updatedRecord = await tx.GetByIdAsync<Element>(record.Id);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(updatedRecord.Name, Is.EqualTo("Fake"));
+                    Assert.That(updatedRecord, Is.Not.Null);
+                    Assert.That(updatedRecord!.Name, Is.EqualTo("Fake"));
                     Assert.That(updatedRecord.Symbol, Is.EqualTo("F"));
                 });
 
@@ -67,7 +73,7 @@ namespace ElementSql.MySqlTests
             IEnumerable<Element> records;
             using (var tx = await StorageManager.StartUnitOfWorkAsync())
             {
-                records = await ShouldGetAllRecords(tx);
+                records = await tx.WhereAsync<Element>(x => x.Id > 0);
 
                 tx.WasSuccessful = true;
             }
@@ -78,11 +84,14 @@ namespace ElementSql.MySqlTests
         [Test, Order(4)]
         public async Task ShouldDeleteRecord()
         {
-            Element deletedRecord;
+            Element? deletedRecord;
             using (var tx = await StorageManager.StartUnitOfWorkAsync())
             {
-                var record = await ShouldReadRecord(1, tx);
-                deletedRecord = await ShouldDeleteRecord(record, tx);
+                var record = await tx.GetByIdAsync<Element>(1UL);
+                Assert.That(record, Is.Not.Null);
+
+                await tx.DeleteAsync(record!);
+                deletedRecord = await tx.GetByIdAsync<Element>(1UL);
 
                 tx.WasSuccessful = true;
             }
@@ -93,7 +102,7 @@ namespace ElementSql.MySqlTests
         private async Task VerifyCommit(ulong id)
         {
             using var session = await StorageManager.StartSessionAsync();
-            var commit = await ElementRepository.GetByIdAsync(id, session);
+            var commit = await session.GetByIdAsync<Element>(id);
 
             Assert.That(commit, Is.Not.Null);
         }

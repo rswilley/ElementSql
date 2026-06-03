@@ -14,27 +14,27 @@ namespace ElementSql
             Transaction = unitOfWork.GetTransaction();
         }
 
-        public async Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase
+        public async Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityBase
         {
             return await EntityHelper.InsertAsync(entity, this, commandTimeout);
         }
 
-        public async Task<TEntity?> GetByIdAsync<TEntity>(object id, int? commandTimeout = null) where TEntity : IEntityRecordBase
+        public async Task<TEntity?> GetByIdAsync<TEntity>(object id, int? commandTimeout = null) where TEntity : IEntityBase
         {
             return await EntityHelper.GetByIdAsync<TEntity>(id, this, commandTimeout);
         }
 
-        public Task<TEntity?> FindAsync<TEntity>(int? commandTimeout = null) where TEntity : IEntityRecordBase
+        public Task<TEntity?> FindAsync<TEntity>(int? commandTimeout = null) where TEntity : IEntityBase
         {
             throw new NotImplementedException();
         }
 
-        public async Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase
+        public async Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityBase
         {
             await EntityHelper.UpdateAsync(entity, this, commandTimeout);
         }
 
-        public async Task DeleteAsync<T>(T entity, int? commandTimeout = null) where T : IEntityRecordBase
+        public async Task DeleteAsync<T>(T entity, int? commandTimeout = null) where T : IEntityBase
         {
             await EntityHelper.DeleteAsync(entity, this, commandTimeout);
         }
