@@ -17,6 +17,21 @@ ElementSql exists for teams that want these trade-offs:
 - **Lower abstraction overhead**: no change tracker complexity for simple CRUD + explicit query flows.
 - **Incremental complexity**: start simple with context CRUD, drop down to custom SQL only where needed.
 
+## Why use ElementSql over pure Dapper?
+
+Pure Dapper gives excellent low-level primitives. ElementSql keeps that power, but removes repetitive application plumbing.
+
+ElementSql adds practical benefits on top of Dapper:
+
+- **Transaction lifecycle by default**: `StartUnitOfWorkAsync()` gives an explicit transactional scope and commit/rollback semantics.
+- **Session lifecycle by default**: `StartSessionAsync()` provides a clear connection scope for read/write operations outside a transaction.
+- **Safer write patterns**: a unit of work rolls back unless `WasSuccessful = true` is set, which helps prevent accidental partial writes.
+- **No hand-written basic CRUD SQL**: `InsertAsync`, `GetByIdAsync`, `UpdateAsync`, and `DeleteAsync` cover routine data operations.
+- **Less repetitive parameter mapping**: avoid re-implementing the same key-based statements and argument wiring in every service.
+- **Keep full SQL capabilities**: for advanced scenarios, use `IQuery<TResult>` and execute whatever SQL your database supports.
+
+Use pure Dapper if you want only raw primitives. Use ElementSql when you want those primitives plus clean, repeatable transaction/session management and less boilerplate.
+
 ## Why no repositories?
 
 Repository layers often become pass-through wrappers around data access calls. Removing them gives you:
