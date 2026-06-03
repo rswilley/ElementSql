@@ -65,7 +65,7 @@ using ElementSql.Attributes;
 using ElementSql.Interfaces;
 
 [Table("elements")]
-public record Element : EntityRecordBase<ulong>
+public record Element : EntityBase<ulong>
 {
     [Key]
     public override ulong Id { get; init; }
