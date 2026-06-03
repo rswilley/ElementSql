@@ -4,10 +4,10 @@ namespace ElementSql.Interfaces
 {
     public interface IConnectionContext : IDisposable
     {
-        Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : EntityBase;
-        Task<TEntity?> FindAsync<TEntity>(int? commandTimeout = null) where TEntity : EntityBase;
-        Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : EntityBase;
-        Task DeleteAsync<T>(T entity, int? commandTimeout = null) where T : EntityBase;
+        Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase;
+        Task<TEntity?> GetByIdAsync<TEntity>(object id, int? commandTimeout = null) where TEntity : IEntityRecordBase;
+        Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase;
+        Task DeleteAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase;
 
         Task<TResult> QueryFirstAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase;
         Task<TResult?> QueryFirstOrDefaultAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase;

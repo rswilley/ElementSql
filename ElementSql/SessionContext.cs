@@ -15,22 +15,27 @@ namespace ElementSql
             Connection = session.Connection;
         }
 
-        public async Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : EntityBase
+        public async Task<TEntity> InsertAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase
         {
             return await EntityHelper.InsertAsync(entity, this, commandTimeout);
         }
 
-        public Task<TEntity?> FindAsync<TEntity>(int? commandTimeout = null) where TEntity : EntityBase
+        public async Task<TEntity?> GetByIdAsync<TEntity>(object id, int? commandTimeout = null) where TEntity : IEntityRecordBase
+        {
+            return await EntityHelper.GetByIdAsync<TEntity>(id, this, commandTimeout);
+        }
+
+        public Task<TEntity?> FindAsync<TEntity>(int? commandTimeout = null) where TEntity : IEntityRecordBase
         {
             throw new NotImplementedException();
         }
 
-        public async Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : EntityBase
+        public async Task UpdateAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase
         {
             await EntityHelper.UpdateAsync(entity, this, commandTimeout);
         }
 
-        public async Task DeleteAsync<T>(T entity, int? commandTimeout = null) where T : EntityBase
+        public async Task DeleteAsync<TEntity>(TEntity entity, int? commandTimeout = null) where TEntity : IEntityRecordBase
         {
             await EntityHelper.DeleteAsync(entity, this, commandTimeout);
         }

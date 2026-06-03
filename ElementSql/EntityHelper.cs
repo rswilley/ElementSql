@@ -17,7 +17,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Entity of T</returns>
-    internal static async Task<TEntity?> GetByIdAsync<TEntity>(object id, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task<TEntity?> GetByIdAsync<TEntity>(object id, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var query = BuildQuery<TEntity>("WHERE Id = @Id");
@@ -35,7 +35,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Entity of T</returns>
-    internal static async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task<IEnumerable<TEntity>> GetAllAsync<TEntity>(IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var query = BuildQuery<TEntity>("");
@@ -51,7 +51,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Identity of inserted entity</returns>
-    internal static async Task<TEntity> InsertAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task<TEntity> InsertAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var insertCommand = CacheTableHelper.GetInsertStatement<TEntity>();
@@ -69,7 +69,7 @@ internal static class EntityHelper
     /// <param name="entity">Entity to be updated</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static async Task UpdateAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task UpdateAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var updateCommand = CacheTableHelper.GetUpdateStatement<TEntity>();
@@ -83,7 +83,7 @@ internal static class EntityHelper
     /// <param name="entity">Entity to be upserted</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static async Task UpsertAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task UpsertAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var shouldInsert = false;
         switch (entity.Id)
@@ -121,7 +121,7 @@ internal static class EntityHelper
     /// <param name="entity">Entity to be deleted</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static async Task DeleteAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static async Task DeleteAsync<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -255,7 +255,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Entity of T</returns>
-    internal static TEntity? GetById<TEntity>(object id, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static TEntity? GetById<TEntity>(object id, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var query = BuildQuery<TEntity>("WHERE Id = @Id");
@@ -273,7 +273,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Entity of T</returns>
-    internal static IEnumerable<TEntity> GetAll<TEntity>(IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static IEnumerable<TEntity> GetAll<TEntity>(IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var query = BuildQuery<TEntity>("");
@@ -289,7 +289,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>Identity of inserted entity, or number of inserted rows if inserting a list</returns>
-    internal static TEntity Insert<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static TEntity Insert<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var insertCommand = CacheTableHelper.GetInsertStatement<TEntity>();
@@ -308,7 +308,7 @@ internal static class EntityHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
     /// <returns>true if updated, false if not found or not modified (tracked entities)</returns>
-    internal static void Update<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static void Update<TEntity>(TEntity entity, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         parts.Connection.Execute(CacheTableHelper.GetUpdateStatement<TEntity>(), entity, parts.Transaction, commandTimeout);
@@ -320,7 +320,7 @@ internal static class EntityHelper
     /// <param name="key">key to delete</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static void Delete<TEntity>(uint key, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static void Delete<TEntity>(uint key, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -334,7 +334,7 @@ internal static class EntityHelper
     /// <param name="key">key to delete</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static void Delete<TEntity>(ulong key, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static void Delete<TEntity>(ulong key, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
@@ -348,7 +348,7 @@ internal static class EntityHelper
     /// <param name="key">key to delete</param>
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">Number of seconds before command execution timeout</param>
-    internal static void Delete<TEntity>(Guid key, IConnectionContext context, int? commandTimeout = null) where TEntity : EntityBase
+    internal static void Delete<TEntity>(Guid key, IConnectionContext context, int? commandTimeout = null) where TEntity : IEntityRecordBase
     {
         var parts = context.GetConnectionParts();
         var command = $"DELETE FROM {CacheTableHelper.GetTableName<TEntity>()} WHERE {CacheTableHelper.GetTableKeyColumn<TEntity>()} = @Key";
