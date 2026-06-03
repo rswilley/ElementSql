@@ -1,6 +1,15 @@
 ﻿namespace ElementSql.Interfaces;
 
-public abstract class EntityBase<TIdentity>
+// Entity contract used by context methods
+public interface IEntityBase
 {
-    public abstract TIdentity Id { get; set; }
+    object Id { get; }
 }
+
+public abstract record EntityBase<TIdentity> : QueryBase, IEntityBase
+{
+    public abstract TIdentity Id { get; init; }
+    object IEntityBase.Id => Id!;
+}
+
+public abstract record QueryBase;

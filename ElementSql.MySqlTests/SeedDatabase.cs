@@ -1,25 +1,26 @@
-﻿using ElementSql.Interfaces;
+﻿using ElementSql;
+using ElementSql.Interfaces;
 
 namespace ElementSql.MySqlTests
 {
-    internal class SeedDatabase : QueryBase
+    internal class SeedDatabase
     {
         public void CreateTable(IConnectionContext context)
         {
-            Execute(@"
+            context.ExecuteAsync(new SqlQuery(@"
                 CREATE TABLE IF NOT EXISTS `elements` (
                   `Id` int NOT NULL AUTO_INCREMENT,
                   `Symbol` char(2) NOT NULL,
                   `Name` varchar(32) NOT NULL,
                   PRIMARY KEY (`Id`)
-                ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;", null!, context);
+                ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;", new Dictionary<string, object>()), context).GetAwaiter().GetResult();
         }
 
         public void PopulateTable(IConnectionContext context)
         {
-            Execute("TRUNCATE TABLE elements;", null!, context);
+            context.ExecuteAsync(new SqlQuery("TRUNCATE TABLE elements;", new Dictionary<string, object>()), context).GetAwaiter().GetResult();
 
-            Execute(@"
+            context.ExecuteAsync(new SqlQuery(@"
                 INSERT INTO elements (`Id`,`Symbol`,`Name`) VALUES
                 (1,'H','Hydrogen'),
                 (2,'He','Helium'),
@@ -138,8 +139,8 @@ namespace ElementSql.MySqlTests
                 (115,'Mc','Moscovium'),
                 (116,'Lv','Livermorium'),
                 (117,'Ts','Tennessine'),
-                (118,'Og','Oganesson');", 
-                null!, context);
+                (118,'Og','Oganesson');",
+                new Dictionary<string, object>()), context).GetAwaiter().GetResult();
         }
     }
 }

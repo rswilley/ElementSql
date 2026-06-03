@@ -100,39 +100,39 @@ namespace ElementSql.Tests
     }
 
     [Table("table_one")]
-    internal class TableOne : EntityBase<int>
+    internal record TableOne : EntityBase<int>
     {
         [Key]
-        public override int Id { get; set; }
+        public override int Id { get; init; }
         public string Name { get; set; } = null!;
     }
 
     // Missing Table attribute
-    internal class TableTwo: EntityBase<int>
+    internal record TableTwo: EntityBase<int>
     {
         [Key]
-        public override int Id { get; set; }
+        public override int Id { get; init; }
     }
 
     [Table("table_three")]
-    internal class TableThree
+    internal record TableThree
     {
         // No properties/columns
     }
 
     [Table("table_four")]
-    internal class TableFour: EntityBase<int>
+    internal record TableFour: EntityBase<int>
     {
-        public override int Id { get; set; }
+        public override int Id { get; init; }
         public string StateProvince { get; set; } = null!;
     }
 
     [Table("table_five")]
-    internal class TableFive : EntityBase<int>
+    internal record TableFive : EntityBase<int>
     {
         [ExplicitKey]
         [Column("id")]
-        public override int Id { get; set; }
+        public override int Id { get; init; }
         [Column("state_province")] // Different column name from property
         public string StateProvince { get; set; } = null!;
     }

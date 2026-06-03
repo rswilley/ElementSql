@@ -1,141 +1,161 @@
-# Element Sql
+# ElementSql
 
-ElementSql is a lightweight wrapper for Dapper that implements the repository pattern and makes it easy to work with database connections and transactions.
+ElementSql is a lightweight Dapper-based data layer for teams that want explicit SQL, fast execution, and clean transaction handling without the repository ceremony.
 
-ElementSql supports all databases that Dapper supports.
+It keeps the best parts developers like in EF-style workflows (entity mapping, unit-of-work boundaries, ergonomic query helpers), while preserving full access to SQL features when you need them.
 
-## ElementSql Setup
+ElementSql supports any database that Dapper supports.
 
-### Setup a repository and its entity
+## Why use ElementSql instead of Entity Framework today?
 
-ElementSql supports all Dapper methods. Take a look at RepositoryBase and QueryBase to see more.
+EF Core is excellent. If your team is productive with EF and your workloads fit its model, keep using it.
+
+ElementSql exists for teams that want these trade-offs:
+
+- **SQL-first control**: CTEs, window functions, vendor-specific syntax, and hand-tuned queries without fighting a LINQ translator.
+- **Predictable performance**: no hidden query generation surprises; you own the SQL and the indexes it needs.
+- **Lower abstraction overhead**: no change tracker complexity for simple CRUD + explicit query flows.
+- **Incremental complexity**: start simple with context CRUD, drop down to custom SQL only where needed.
+
+## Why no repositories?
+
+Repository layers often become pass-through wrappers around data access calls. Removing them gives you:
+
+- **Less code to maintain**: fewer interfaces, fewer adapter classes, fewer duplicate method signatures.
+- **Clear transaction boundaries**: all writes/reads in a use case live in one `tx`/`session` scope.
+- **Better discoverability**: use `InsertAsync`, `GetByIdAsync`, `WhereAsync`, and typed `IQuery` directly from `IConnectionContext`.
+- **No leaky abstractions**: when you need SQL power, use it directly instead of forcing everything through repository APIs.
+
+## New Paradigm Overview
+
+You work with `IStorageManager` to open either:
+
+- **Unit of Work** (`StartUnitOfWorkAsync`) for transactional operations.
+- **Session** (`StartSessionAsync`) for non-transactional read/write operations.
+
+Both return an `IConnectionContext` with:
+
+- CRUD helpers (`InsertAsync`, `GetByIdAsync`, `UpdateAsync`, `DeleteAsync`)
+- query execution (`QuerySingleAsync`, `QueryAsync`, `ExecuteAsync`, etc.)
+- typed `IQuery<TResult>` convenience overloads via `SimpleQueryExtensions`
+- LINQ-style simple filtering (`WhereAsync`, `FirstOrDefaultWhereAsync`) translated to SQL
+
+## Setup
+
+### 1) Define an entity
 
 ```csharp
-public interface IElementRepository : IRepository<Element>
-{
-    Task<Element?> GetByName(string name, IConnectionContext context);
-}
-
-public class ElementRepository : RepositoryBase<Element, int>, IElementRepository
-{
-    public async Task<Element?> GetByName(string name, IConnectionContext context)
-    {
-        return await QuerySingleOrDefaultAsync($"WHERE {nameof(Element.Name)} = @Name", new { name }, context);
-    }
-}
+using System.ComponentModel.DataAnnotations;
+using ElementSql.Attributes;
+using ElementSql.Interfaces;
 
 [Table("elements")]
-public class Element : EntityBase<int>
+public record Element : EntityRecordBase<ulong>
 {
     [Key]
-    public override int Id { get; set; }
-    public string Name { get; set; } = null!;
-    public string Symbol { get; set; } = null!;
+    public override ulong Id { get; init; }
+    public string Name { get; init; } = null!;
+    public string Symbol { get; init; } = null!;
 }
 ```
 
-### Setup a Query
-
-Queries are for sql queries that don't map directly to an entity.
+### 2) Configure DI and databases
 
 ```csharp
-public interface ITestQuery : IElementSqlQuery
-{
-    Task<DateTime> GetCurrentTime(IConnectionContext context);
-}
+using ElementSql;
+using ElementSql.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using MySql.Data.MySqlClient;
 
-public class TestQuery : QueryBase, ITestQuery
-{
-    public async Task<DateTime> GetCurrentTime(IConnectionContext context)
-    {
-        return await ExecuteScalarAsync<DateTime>("SELECT UTC_TIMESTAMP()", null!, context);
-    }
-}
-```
+var services = new ServiceCollection();
 
-### Optional: Create a ```DbContext```. 
-
-This pattern can be used to add your repositories to ```StorageManager```. It is not required, but it has worked pretty well for me.
-
-```csharp
-public interface IDbContext
-{
-    IElementRepository ElementRepository { get; }
-    ITestQuery TestQuery { get; }
-}
-
-public class DbContext : IDbContext
-{
-    public IElementRepository ElementRepository => _elementRepository ??= _serviceProvider.GetRequiredService<IElementRepository>();
-    public ITestQuery TestQuery => _testQuery ??= _serviceProvider.GetRequiredService<ITestQuery>();
-
-    public DbContext(IServiceProvider serviceProvider)
-    {
-        _serviceProvider = serviceProvider;
-    }
-
-    private readonly IServiceProvider _serviceProvider;
-
-    private IElementRepository _elementRepository;
-    private ITestQuery _testQuery;
-}
-```
-
-### Setup your StorageManager
-
-StorageManager is used to open up database connections and transactions.
-
-```csharp
-public interface IMyStorageManager : IStorageManager
-{
-    IDbContext DbContext { get; set; }
-}
-
-public class MyStorageManager : StorageManager, IMyStorageManager
-{
-    private readonly IServiceProvider _serviceProvider;
-
-    public MyStorageManager(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-        DbContext = new DbContext(serviceProvider);
-    }
-
-    public IDbContext DbContext { get; set; }
-}
-```
-
-### Setup your database and DI
-
-The following is a MySql example, but ElementSql will work with Sql Server, Postgres, Sqlite, etc (any database that implements ```IDbConnection```).
-
-```csharp
-//Program.cs
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnectionString")!;
-builder.Services.AddTransient<IMyStorageManager, MyStorageManager>();
-builder.Services.AddTransient<IElementRepository, ElementRepository>();
-builder.Services.AddTransient<ITestQuery, TestQuery>();
-builder.Services.AddElementSql(config =>
+services.AddElementSql(config =>
 {
     config.Databases.Add("Default", () => new MySqlConnection(connectionString));
 });
+
+// Register StorageManager explicitly.
+services.AddSingleton<IStorageManager>(sp => new StorageManager(sp));
 ```
 
-### Starting a transaction and writing data to the database
+## Usage
+
+### Transactional write flow (Unit of Work)
 
 ```csharp
-//UnitOfWorkContext implements IDisposable. The default action is to rollback on error.
-//Setting WasSuccessful to true will Commit the transaction when Dispose is called.
-using var transaction = await _storageManager.StartUnitOfWorkAsync();
-_ = await _storageManager.DbContext.ElementRepository.Add(new Element { Name = "Selenium" }, transaction);
-//write to other tables using transaction
-transaction.WasSuccessful = true; //Commits the transaction when Dispose is called
+using var tx = await storageManager.StartUnitOfWorkAsync();
+
+var inserted = await tx.InsertAsync(new Element
+{
+    Name = "Gold",
+    Symbol = "Au"
+});
+
+var updated = inserted with { Symbol = "Gd" };
+await tx.UpdateAsync(updated);
+
+tx.WasSuccessful = true; // commit on dispose
 ```
 
-### Opening a database connection and reading data from the database
+`WasSuccessful` defaults to `false`, so dispose rolls back unless explicitly set to `true`.
+
+### Session flow (no transaction)
 
 ```csharp
-//SessionContext implements IDisposable and will automatically close the
-//database connection when Dispose is called
-using var session = await _storageManager.StartSessionAsync();
-var user = await _storageManager.DbContext.ElementRepository.GetById(id, session);
+using var session = await storageManager.StartSessionAsync();
+
+var element = await session.GetByIdAsync<Element>(1UL);
+var all = await session.WhereAsync<Element>(x => x.Id > 0);
 ```
+
+### Typed SQL query object (`IQuery<TResult>`)
+
+```csharp
+using ElementSql.Interfaces;
+
+public class ElementByIdQuery(ulong id) : IQuery<Element>
+{
+    public string QueryText => "SELECT Id, Name, Symbol FROM elements WHERE Id = @Id";
+
+    public Dictionary<string, object> Parameters => new()
+    {
+        { "Id", id }
+    };
+}
+
+using var session = await storageManager.StartSessionAsync();
+var one = await session.QuerySingleOrDefaultAsync(new ElementByIdQuery(1));
+```
+
+### LINQ-style simple SQL filters
+
+ElementSql supports common expression patterns and translates them into SQL:
+
+- comparisons: `==`, `!=`, `>`, `>=`, `<`, `<=`
+- boolean composition: `&&`, `||`, `!`
+- string methods: `Contains`, `StartsWith`, `EndsWith`
+- null checks: `== null`, `!= null`
+- list membership: `ids.Contains(x.Id)` -> `IN (...)`
+
+```csharp
+using var session = await storageManager.StartSessionAsync();
+
+var ids = new List<ulong> { 1, 2, 3 };
+var results = await session.WhereAsync<Element>(x =>
+    ids.Contains(x.Id) &&
+    x.Name.StartsWith("G") &&
+    x.Symbol != null);
+```
+
+## Philosophy
+
+ElementSql is not trying to be a full ORM query provider.
+
+It gives you:
+
+- a small, explicit data-access surface
+- transaction/session ergonomics
+- lightweight expression helpers for common cases
+- direct SQL power for everything else
+
+If you want full provider-driven abstraction over SQL shape, EF Core is a great choice. If you want explicit SQL with less ceremony, ElementSql is a great fit.

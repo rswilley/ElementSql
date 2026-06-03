@@ -1,4 +1,6 @@
-﻿namespace ElementSql.MySqlTests
+﻿using ElementSql;
+
+namespace ElementSql.MySqlTests
 {
     [TestFixture]
     public class SessionTests : AutomatedTestBase
@@ -9,18 +11,18 @@
             Element record;
             using (var session = await StorageManager.StartSessionAsync())
             {
-                record = await ShouldCreateRecord(new Element
+                record = await session.InsertAsync(new Element
                 {
                     Name = "Gold",
                     Symbol = "Au"
-                }, session);
-                
-                var record2 = await ShouldCreateRecord(new Element
+                });
+
+                var record2 = await session.InsertAsync(new Element
                 {
                     Name = "Gold",
                     Symbol = "Au"
-                }, session);
-                
+                });
+
                 Assert.That(record2.Id, Is.EqualTo(120));
             }
 
@@ -38,7 +40,7 @@
             Element record;
             using (var session = await StorageManager.StartSessionAsync())
             {
-                record = await ShouldReadRecord(1, session);
+                record = (await session.GetByIdAsync<Element>(1UL))!;
 
                 Assert.Multiple(() =>
                 {
@@ -47,14 +49,18 @@
                     Assert.That(record.Symbol, Is.EqualTo("H"));
                 });
 
-                // Update
-                record.Name = "Fake";
-                record.Symbol = "F";
-                var updatedRecord = await ShouldUpdateRecord(record, session);
+                var toUpdate = record with
+                {
+                    Name = "Fake",
+                    Symbol = "F"
+                };
+                await session.UpdateAsync(toUpdate);
+                var updatedRecord = await session.GetByIdAsync<Element>(record.Id);
 
                 Assert.Multiple(() =>
                 {
-                    Assert.That(updatedRecord.Name, Is.EqualTo("Fake"));
+                    Assert.That(updatedRecord, Is.Not.Null);
+                    Assert.That(updatedRecord!.Name, Is.EqualTo("Fake"));
                     Assert.That(updatedRecord.Symbol, Is.EqualTo("F"));
                 });
             }
@@ -66,7 +72,7 @@
             IEnumerable<Element> records;
             using (var session = await StorageManager.StartSessionAsync())
             {
-                records = await ShouldGetAllRecords(session);
+                records = await session.WhereAsync<Element>(x => x.Id > 0);
             }
 
             Assert.That(records.Any(), Is.True);
@@ -75,11 +81,14 @@
         [Test, Order(4)]
         public async Task ShouldDeleteRecord()
         {
-            Element deletedRecord;
+            Element? deletedRecord;
             using (var session = await StorageManager.StartSessionAsync())
             {
-                var record = await ShouldReadRecord(1, session);
-                deletedRecord = await ShouldDeleteRecord(record, session);
+                var record = await session.GetByIdAsync<Element>(1UL);
+                Assert.That(record, Is.Not.Null);
+
+                await session.DeleteAsync(record!);
+                deletedRecord = await session.GetByIdAsync<Element>(1UL);
             }
 
             Assert.That(deletedRecord, Is.Null);
