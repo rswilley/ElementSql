@@ -41,44 +41,44 @@ namespace ElementSql
 
         public Task<TResult> QueryFirstAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.QueryFirstAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<TResult?> QueryFirstOrDefaultAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.QueryFirstOrDefaultAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<TResult> QuerySingleAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.QuerySingleAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<TResult?> QuerySingleOrDefaultAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.QuerySingleOrDefaultAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<IEnumerable<TResult>> QueryAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.QueryAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<TResult?> ExecuteScalarAsync<TResult>(IQuery query, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
         {
-            throw new NotImplementedException();
+            return QueryHelper.ExecuteScalarAsync<TResult>(query, this, commandTimeout, commandType);
         }
 
         public Task<IDataReader> ExecuteReaderAsync(IQuery query, IConnectionContext context, int? commandTimeout = null,
             CommandType? commandType = null)
         {
-            throw new NotImplementedException();
+            return QueryHelper.ExecuteReaderAsync(query, this, commandTimeout, commandType);
         }
 
         public Task<int> ExecuteAsync(IQuery query, IConnectionContext context, int? commandTimeout = null,
             CommandType? commandType = null)
         {
-            throw new NotImplementedException();
+            return QueryHelper.ExecuteAsync(query, this, commandTimeout, commandType);
         }
 
         public void Dispose()

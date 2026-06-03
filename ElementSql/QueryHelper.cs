@@ -14,7 +14,7 @@ internal static class QueryHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">The command timeout (in seconds).</param>
     /// <param name="commandType">The type of command to execute.</param>
-    public static async Task<TResult> QuerySingleAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static async Task<TResult> QuerySingleAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return await parts.Connection.QuerySingleAsync<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -28,7 +28,7 @@ internal static class QueryHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">The command timeout (in seconds).</param>
     /// <param name="commandType">The type of command to execute.</param>
-    public static async Task<TResult?> QuerySingleOrDefaultAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static async Task<TResult?> QuerySingleOrDefaultAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return await parts.Connection.QuerySingleOrDefaultAsync<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -42,7 +42,7 @@ internal static class QueryHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">The command timeout (in seconds).</param>
     /// <param name="commandType">The type of command to execute.</param>
-    public static async Task<TResult> QueryFirstAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static async Task<TResult> QueryFirstAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return await parts.Connection.QueryFirstAsync<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -56,7 +56,7 @@ internal static class QueryHelper
     /// <param name="context">The connection context from Storage Manager</param>
     /// <param name="commandTimeout">The command timeout (in seconds).</param>
     /// <param name="commandType">The type of command to execute.</param>
-    public static async Task<TResult?> QueryFirstOrDefaultAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static async Task<TResult?> QueryFirstOrDefaultAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return await parts.Connection.QueryFirstOrDefaultAsync<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -74,7 +74,7 @@ internal static class QueryHelper
     /// A sequence of data of <typeparamref name="TResult"/>; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static async Task<IEnumerable<TResult>> QueryAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static async Task<IEnumerable<TResult>> QueryAsync<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return await parts.Connection.QueryAsync<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -150,7 +150,7 @@ internal static class QueryHelper
     /// A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static TResult QuerySingle<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static TResult QuerySingle<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return parts.Connection.QuerySingle<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -168,7 +168,7 @@ internal static class QueryHelper
     /// A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static TResult? QuerySingleOrDefault<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static TResult? QuerySingleOrDefault<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return parts.Connection.QuerySingleOrDefault<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -186,7 +186,7 @@ internal static class QueryHelper
     /// A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static TResult QueryFirst<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static TResult QueryFirst<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return parts.Connection.QueryFirst<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -204,7 +204,7 @@ internal static class QueryHelper
     /// A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static TResult? QueryFirstOrDefault<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static TResult? QueryFirstOrDefault<TResult>(IQuery query, IConnectionContext context, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return parts.Connection.QueryFirstOrDefault<TResult>(query.QueryText, query.Parameters, parts.Transaction, commandTimeout, commandType);
@@ -223,7 +223,7 @@ internal static class QueryHelper
     /// A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column is assumed, otherwise an instance is
     /// created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
     /// </returns>
-    public static IEnumerable<TResult> Query<TResult>(IQuery query, IConnectionContext context, bool buffered = true, int? commandTimeout = null, CommandType? commandType = null) where TResult : QueryBase
+    public static IEnumerable<TResult> Query<TResult>(IQuery query, IConnectionContext context, bool buffered = true, int? commandTimeout = null, CommandType? commandType = null) where TResult : Interfaces.QueryBase
     {
         var parts = context.GetConnectionParts();
         return parts.Connection.Query<TResult>(query.QueryText, query.Parameters, parts.Transaction, buffered, commandTimeout, commandType);

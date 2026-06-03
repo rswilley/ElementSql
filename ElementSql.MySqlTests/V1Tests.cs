@@ -37,7 +37,16 @@ public class V1Tests : AutomatedTestBase
         using var session = await StorageManager.StartSessionAsync();
         var commit = await session.GetByIdAsync<ElementV1>(id);
 
-        Assert.That(commit, Is.Not.Null);
+        var queryResult = await session.QuerySingleOrDefaultAsync(new TestV1Query(id));
+
+        var one = await session.FirstOrDefaultWhereAsync<ElementV1>(x => x.Name == "Gold");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(commit, Is.Not.Null);
+            Assert.That(queryResult, Is.Not.Null);
+            Assert.That(one, Is.Not.Null);
+        });
     }
 }
 
@@ -48,4 +57,14 @@ public record ElementV1 : EntityRecordBase<ulong>
     public override ulong Id { get; init; }
     public string Name { get; init; } = null!;
     public string Symbol { get; init; } = null!;
+}
+
+public class TestV1Query(ulong id) : IQuery<ElementV1>
+{
+    public string QueryText => "SELECT Id, Name, Symbol FROM elements WHERE Id = @Id";
+
+    public Dictionary<string, object> Parameters => new()
+    {
+        { "@Id", id }
+    };
 }

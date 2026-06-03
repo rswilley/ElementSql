@@ -11,7 +11,7 @@ public interface IEntityRecordBase
     object Id { get; }
 }
 
-public abstract record EntityRecordBase<TIdentity> : IEntityRecordBase
+public abstract record EntityRecordBase<TIdentity> : QueryBase, IEntityRecordBase
 {
     public abstract TIdentity Id { get; init; }
     object IEntityRecordBase.Id => Id!;
